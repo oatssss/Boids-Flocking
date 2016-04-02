@@ -3,26 +3,13 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public abstract class BoidsPartitioner : UnitySingletonPersistent<BoidsPartitioner>
+public abstract class BoidsPartitioner : MonoBehaviour
 {
     [ReadOnly] [SerializeField] protected Dictionary<Boid.TYPE,List<Boid>> AllBoids;
 
-    public void RegisterBoid(Boid boid)
+    void Start()
     {
-        List<Boid> boids;
-        bool exists = this.AllBoids.TryGetValue(boid.Type, out boids);
-
-        if (!exists)
-            { boids = new List<Boid>(); }
-
-        boids.Add(boid);
-        this.AllBoids[boid.Type] = boids;
-    }
-
-    public void DeregisterBoid(Boid boid)
-    {
-        List<Boid> boids = this.AllBoids[boid.Type];
-        boids.Remove(boid);
+        this.AllBoids = BoidsManager.Instance.AllBoids;
     }
 
     public Dictionary<Boid.TYPE,List<Boid>> FindNeighbours(Boid boid)

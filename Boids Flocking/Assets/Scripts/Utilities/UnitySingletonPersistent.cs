@@ -10,6 +10,7 @@ public class UnitySingletonPersistent<T> : MonoBehaviour
 				instance = FindObjectOfType<T> ();
 				if (instance == null) {
 					GameObject obj = new GameObject ();
+                    obj.name = typeof(T).ToString();
 					instance = obj.AddComponent<T> ();
 				}
 			}
