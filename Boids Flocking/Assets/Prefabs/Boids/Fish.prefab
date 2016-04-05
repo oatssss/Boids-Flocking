@@ -196,9 +196,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BoidsManager: {fileID: 0}
+  Fleeing: 0
+  Speed: 0
+  Neighbours: []
+  Repellants: []
+  Predators: []
+  Prey: []
+  TargetsWithinRange: []
+  Goal: {fileID: 0}
   _type: 0
   _neighbourTypes: 00000000
+  _preyTypes: 
   _predatorTypes: 01000000
+  _fleeTypes: 01000000
+  _flocks: 1
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

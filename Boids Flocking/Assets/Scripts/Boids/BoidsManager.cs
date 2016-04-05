@@ -3,33 +3,65 @@ using System.Collections.Generic;
 
 public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
 
-	[ReadOnly] public Dictionary<Boid.TYPE,List<Boid>> AllBoids = new Dictionary<Boid.TYPE,List<Boid>>();
     public BoidsPartitioner SpatialPartitioner;
+	[ReadOnly] public Dictionary<Boid.TYPE,List<Boid>> AllBoids = new Dictionary<Boid.TYPE,List<Boid>>();
+    [ReadOnly] public List<BoidsTarget> AllTargets = new List<BoidsTarget>();
+    [ReadOnly] public List<ProximityTarget> AllProximityTargets = new List<ProximityTarget>();
     [Space(10)]
 
     [Header("Fish Settings")]
     [Header("Radii")]
-    [Range(0.1f,256f)]  public float FishNeighbourRadius        = 4f;
-    [Range(0.1f,32f)]   public float FishRepellantRadius        = 1f;
-    [Range(0.1f,1024f)] public float FishPredatorRadius         = 8f;
+    [Range(0.1f,32f)]   public float FishNeighbourRadius        = 3f;
+    [Range(0.1f,8f)]    public float FishRepellantRadius        = 1.5f;
+    [Range(0.1f,64f)]   public float FishPredatorRadius         = 8f;
+    [Range(0.1f,64f)]   public float FishFleeRadius            = 2f;
     [Range(0.01f,1f)]   public float FishCohesiveSwitchRatio    = 0.75f;
     [ReadOnly] [SerializeField] private float _fishCohesiveSwitchDistance;
 
     [Header("Speeds")]
-    [Range(0.0001f,0.001f)] public float FishMaxAcceleration = 0.5f;
-    [Range(0f,10f)] public float FishMinSpeed = 0f;
-    [Range(0f,20f)] public float FishMaxSpeed = 1f;
+    [Range(0.0001f,0.001f)] public float FishMaxAcceleration = 0.0004f;
+    [Range(0.0001f,0.001f)] public float FishMaxDeceleration = 0.0005f;
+    [Range(0f,0.1f)] public float FishMinSpeed = 0.01f;
+    [Range(0f,20f)] public float FishMaxSpeed = 2f;
 
     [Header("Weights")]
     [Range(0f,5f)] public float FishCohesionWeight = 1f;
-    [Range(0f,5f)] public float FishSeparationWeight = 1f;
-    [Range(0f,5f)] public float FishAlignmentWeight = 1f;
+    [Range(0f,5f)] public float FishSeparationWeight = 2f;
+    [Range(0f,5f)] public float FishAlignmentWeight = 2.25f;
     [Range(0f,5f)] public float FishPredatorWeight = 1f;
+    [Range(0f,5f)] public float FishGoalWeight = 1f;
+    [Space(20)]
+
+    [Header("Shark Settings")]
+    [Header("Radii")]
+    [Range(0.1f,32f)]   public float SharkNeighbourRadius       = 7f;
+    [Range(0.1f,8f)]    public float SharkRepellantRadius       = 3f;
+    [Range(0.1f,64f)]   public float SharkPredatorRadius        = 15f;
+    [Range(0.1f,64f)]   public float SharkFleeRadius           = 6f;
+    [Range(0.01f,1f)]   public float SharkCohesiveSwitchRatio   = 0.75f;
+    [ReadOnly] [SerializeField] private float _sharkCohesiveSwitchDistance;
+
+    [Header("Speeds")]
+    [Range(0.0001f,0.001f)] public float SharkMaxAcceleration = 0.0006f;
+    [Range(0.0001f,0.001f)] public float SharkMaxDeceleration = 0.0007f;
+    [Range(0f,0.1f)] public float SharkMinSpeed = 0.015f;
+    [Range(0f,20f)] public float SharkMaxSpeed = 4f;
+
+    [Header("Weights")]
+    [Range(0f,5f)] public float SharkCohesionWeight = 1f;
+    [Range(0f,5f)] public float SharkSeparationWeight = 2f;
+    [Range(0f,5f)] public float SharkAlignmentWeight = 2.25f;
+    [Range(0f,5f)] public float SharkPredatorWeight = 1f;
+    [Range(0f,5f)] public float SharkGoalWeight = 1f;
 
     // Cached items
     public float FishCohesiveSwitchDistance {
         get         { return this._fishCohesiveSwitchDistance; }
         private set { this._fishCohesiveSwitchDistance = value; }
+    }
+    public float SharkCohesiveSwitchDistance {
+        get         { return this._sharkCohesiveSwitchDistance; }
+        private set { this._sharkCohesiveSwitchDistance = value; }
     }
 
     protected override void Awake()
@@ -55,6 +87,18 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
     }
 #endif
 
+    private void CalculateValidSettings()
+    {
+        // Find the current radius based on ratio
+        this.FishCohesiveSwitchDistance = this.FishNeighbourRadius * this.FishCohesiveSwitchRatio;
+
+        // Repellant radius should not be greater than neighbour radius
+        this.FishRepellantRadius = Mathf.Clamp(this.FishRepellantRadius, 0f, this.FishNeighbourRadius);
+
+        // Min speed should always be less than max speed
+        this.FishMinSpeed = Mathf.Clamp(this.FishMinSpeed, 0f, this.FishMaxSpeed);
+    }
+
     public void RegisterBoid(Boid boid)
     {
         List<Boid> boids;
@@ -73,15 +117,23 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
         boids.Remove(boid);
     }
 
-    private void CalculateValidSettings()
+    public void RegisterTarget(BoidsTarget target)
     {
-        // Find the current radius based on ratio
-        this.FishCohesiveSwitchDistance = this.FishNeighbourRadius * this.FishCohesiveSwitchRatio;
+        this.AllTargets.Add(target);
+    }
 
-        // Repellant radius should not be greater than neighbour radius
-        this.FishRepellantRadius = Mathf.Clamp(this.FishRepellantRadius, 0f, this.FishNeighbourRadius);
+    public void DeregisterTarget(BoidsTarget target)
+    {
+        this.AllTargets.Remove(target);
+    }
 
-        // Min speed should always be less than max speed
-        this.FishMinSpeed = Mathf.Clamp(this.FishMinSpeed, 0f, this.FishMaxSpeed);
+    public void RegisterProximityTarget(ProximityTarget target)
+    {
+        this.AllProximityTargets.Add(target);
+    }
+
+    public void DeregisterProximityTarget(ProximityTarget target)
+    {
+        this.AllProximityTargets.Remove(target);
     }
 }

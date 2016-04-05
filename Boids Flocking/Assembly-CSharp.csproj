@@ -52,9 +52,12 @@
      <Compile Include="Assets\Scripts\Boids\BoidsKDTree.cs" />
      <Compile Include="Assets\Scripts\Boids\BoidsManager.cs" />
      <Compile Include="Assets\Scripts\Boids\BoidsPartitioner.cs" />
+     <Compile Include="Assets\Scripts\Boids\BoidsTarget.cs" />
      <Compile Include="Assets\Scripts\Boids\Fish.cs" />
      <Compile Include="Assets\Scripts\Boids\KDTreePartitioner.cs" />
      <Compile Include="Assets\Scripts\Boids\NoPartitioner.cs" />
+     <Compile Include="Assets\Scripts\Boids\ProximityTarget.cs" />
+     <Compile Include="Assets\Scripts\Boids\Shark.cs" />
      <Compile Include="Assets\Scripts\Boids\SpatialHashPartitioner.cs" />
      <Compile Include="Assets\Scripts\Utilities\ExtensionMethods.cs" />
      <Compile Include="Assets\Scripts\Utilities\ReadOnlyAttribute.cs" />
