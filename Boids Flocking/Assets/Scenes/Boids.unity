@@ -1951,9 +1951,10 @@ MonoBehaviour:
   SpatialPartitioner: {fileID: 1231843020}
   AllTargets: []
   AllProximityTargets: []
-  FishNeighbourRadius: 10
+  MaxFishFlockSize: 10
+  FishNeighbourRadius: 6
   FishRepellantRadius: 1.5
-  FishPredatorRadius: 8
+  FishPredatorRadius: 10
   FishFleeRadius: 3
   FishCohesiveSwitchRatio: 0.75
   _fishCohesiveSwitchDistance: 0
@@ -1966,6 +1967,7 @@ MonoBehaviour:
   FishAlignmentWeight: 1.125
   FishPredatorWeight: 1
   FishGoalWeight: 1
+  MaxSharkFlockSize: 0
   SharkNeighbourRadius: 7
   SharkRepellantRadius: 3
   SharkPredatorRadius: 15
@@ -2642,15 +2644,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BoidsManager: {fileID: 0}
-  Fleeing: 0
-  HasPredators: 0
   Speed: 0
   Neighbours: []
   Repellants: []
   Predators: []
   Prey: []
   TargetsWithinRange: []
+  _flockLeader: {fileID: 0}
+  _flock: []
+  LeaderTrail: {fileID: 0}
   Goal: {fileID: 0}
+  Fleeing: 0
+  HasPredators: 0
   _type: 1
   _neighbourTypes: 01000000
   _preyTypes: 00000000

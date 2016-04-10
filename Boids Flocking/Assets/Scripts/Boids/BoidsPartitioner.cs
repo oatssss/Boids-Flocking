@@ -13,18 +13,34 @@ public abstract class BoidsPartitioner : MonoBehaviour
 
     public Dictionary<Boid.TYPE,List<Boid>> FindNeighbours(Boid boid)
     {
+        bool withinFlockVicinity = (boid.transform.position - boid.FlockLeader.transform.position).magnitude < boid.FlockLeader.NeighbourRadius * 1.5f;
+        if (!withinFlockVicinity)
+            { boid.Isolate(); }
+
         // Get the friendly types that 'boid' flocks with
         Boid.TYPE[] neighbourTypes = boid.NeighbourTypes;
         Dictionary<Boid.TYPE,List<Boid>> potentialNeighbours = this.FindTypesWithinRadius(neighbourTypes, boid.NeighbourRadius, boid.transform.position);
 
+        // /*
         foreach (Boid.TYPE type in potentialNeighbours.Keys)
         {
             List<Boid> typedNeighbours = potentialNeighbours[type];
             foreach (Boid neighbour in typedNeighbours.ToArray())
             {
+                bool sameFlock = boid.FlockLeader == neighbour.FlockLeader;
+                if (sameFlock)
+                    { continue; }
 
+                // Can merge? Should merge? If not, remove
+                bool canMerge = (boid.FlockSize + neighbour.FlockSize) <= neighbour.MaxFlockSize;
+                bool shouldMerge = boid.FlockSize <= boid.MaxFlockSize/2;
+                if (canMerge && shouldMerge)
+                    { boid.FlockLeader = neighbour.FlockLeader; }
+                else
+                    { typedNeighbours.Remove(neighbour); }
             }
         }
+        // */
 
         return potentialNeighbours;
     }

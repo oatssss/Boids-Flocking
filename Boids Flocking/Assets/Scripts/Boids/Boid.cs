@@ -74,6 +74,22 @@ public abstract class Boid : MonoBehaviour {
 #endif
     // Unlike the above lists, the boid does need to keep track of targets for the calculation since the target calculation occurs in stages
     [ReadOnly] [SerializeField] private List<BoidsTarget> TargetsWithinRange = new List<BoidsTarget>();
+    [SerializeField] private Boid _flockLeader;
+    public Boid FlockLeader {
+        get { return this._flockLeader; }
+        set {
+            this.Flock.Remove(this);
+            this._flockLeader = value;
+            this.Flock.Add(this);
+        }
+    }
+    [ReadOnly] [SerializeField] private List<Boid> _flock = new List<Boid>();
+    private List<Boid> Flock {
+        get { return (this.IsFlockLeader || this.FlockLeader == null) ? this._flock : this.FlockLeader._flock; }
+    }
+    public bool IsFlockLeader { get { return this.FlockLeader == this; } }
+    public int FlockSize { get { return this.Flock.Count; } }
+    public int InheritedMaxFlockSize { get { return this.FlockLeader.MaxFlockSize; } }
     [SerializeField] private Transform LeaderTrail = null;  // The transform that following boids should aim for if this boid is a leader
     [ReadOnly] [SerializeField] private Transform Goal;
     [ReadOnly] public bool Fleeing;
@@ -83,17 +99,34 @@ public abstract class Boid : MonoBehaviour {
     {
         this.BoidsManager = BoidsManager.Instance;
         this.BoidsManager.RegisterBoid(this);
+        // this._flockLeader = this;   // First initialize to have previous
+        this.FlockLeader = this;
     }
 
     protected virtual void OnDestroy()
     {
         this.BoidsManager.DeregisterBoid(this);
+        this.Isolate(); // Possible that things develop more references to this before being destroyed?
+    }
+
+    public void Isolate()
+    {
+        if (this.IsFlockLeader)
+        {
+            foreach (Boid follower in this.Flock)
+            {
+                follower.FlockLeader = follower;
+            }
+        }
+        this.FlockLeader = this;
+        // this.Flock.Clear(); // Commented because we want the leader to be counted in the flock
     }
 
     protected virtual void FixedUpdate()
     {
         Dictionary<Boid.TYPE,List<Boid>> neighbours = this.BoidsManager.SpatialPartitioner.FindNeighbours(this);
-        Dictionary<Boid.TYPE,List<Boid>> repellants = this.BoidsManager.SpatialPartitioner.FindRepellants(this);
+        // Dictionary<Boid.TYPE,List<Boid>> repellants = this.BoidsManager.SpatialPartitioner.FindRepellants(this);
+        Dictionary<Boid.TYPE,List<Boid>> repellants = neighbours;
         Dictionary<Boid.TYPE,List<Boid>> predators  = this.BoidsManager.SpatialPartitioner.FindPredators(this);
         Dictionary<Boid.TYPE,List<Boid>> prey       = this.BoidsManager.SpatialPartitioner.FindPrey(this);
         this.TargetsWithinRange                     = this.BoidsManager.SpatialPartitioner.FindTargetsNearBoid(this);
@@ -130,8 +163,8 @@ public abstract class Boid : MonoBehaviour {
         Vector3 avoidPredators  = this.CalculatePredators(predators);
         Vector3 goalSeeking     = this.CalculateGoal();
 
-        if (!this.Goal) { separation *= 0.3f; }
-        if (this.HasPredators) { separation *= 0.5f; }
+        if (!this.Goal || this.HasPredators) { separation *= 0.3f; }
+        // if (this.HasPredators) { separation *= 0.3f; }
 
         Vector3 updateVelocity = cohesion + separation + alignment + avoidPredators + goalSeeking;
 
