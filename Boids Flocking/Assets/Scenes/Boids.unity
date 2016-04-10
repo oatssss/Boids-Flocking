@@ -13,7 +13,7 @@ SceneSettings:
 --- !u!104 &2
 RenderSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 6
+  serializedVersion: 7
   m_Fog: 0
   m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   m_FogMode: 3
@@ -37,12 +37,12 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
+  m_IndirectSpecularColor: {r: 0.44692534, g: 0.49678725, b: 0.57508564, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 6
+  serializedVersion: 7
   m_GIWorkflowMode: 0
-  m_LightmapsMode: 1
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -53,17 +53,22 @@ LightmapSettings:
     m_EnableBakedLightmaps: 1
     m_EnableRealtimeLightmaps: 1
   m_LightmapEditorSettings:
-    serializedVersion: 3
+    serializedVersion: 4
     m_Resolution: 2
     m_BakeResolution: 40
     m_TextureWidth: 1024
     m_TextureHeight: 1024
+    m_AO: 0
     m_AOMaxDistance: 1
-    m_Padding: 2
     m_CompAOExponent: 0
+    m_CompAOExponentDirect: 0
+    m_Padding: 2
     m_LightmapParameters: {fileID: 0}
+    m_LightmapsBakeMode: 1
     m_TextureCompression: 1
+    m_DirectLightInLightProbes: 1
     m_FinalGather: 0
+    m_FinalGatherFiltering: 1
     m_FinalGatherRayCount: 1024
     m_ReflectionCompression: 2
   m_LightingDataAsset: {fileID: 0}
@@ -892,7 +897,7 @@ Light:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 432817580}
   m_Enabled: 1
-  serializedVersion: 6
+  serializedVersion: 7
   m_Type: 1
   m_Color: {r: 1, g: 0.95686275, b: 0.8392157, a: 1}
   m_Intensity: 1
@@ -914,10 +919,10 @@ Light:
     serializedVersion: 2
     m_Bits: 4294967295
   m_Lightmapping: 4
+  m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
-  m_AreaSize: {x: 1, y: 1}
 --- !u!4 &432817582
 Transform:
   m_ObjectHideFlags: 0
@@ -930,6 +935,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &444083861 stripped
 Transform:
   m_PrefabParentObject: {fileID: 452964, guid: 16de31618e96246d58e5eecfa39c5bd4, type: 2}
@@ -1082,6 +1088,7 @@ Transform:
   - {fileID: 1175755750}
   m_Father: {fileID: 0}
   m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &507274255 stripped
 Transform:
   m_PrefabParentObject: {fileID: 452964, guid: 16de31618e96246d58e5eecfa39c5bd4, type: 2}
@@ -1892,6 +1899,7 @@ Transform:
   - {fileID: 1980308663}
   m_Father: {fileID: 0}
   m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1216613568 stripped
 Transform:
   m_PrefabParentObject: {fileID: 452964, guid: 16de31618e96246d58e5eecfa39c5bd4, type: 2}
@@ -1943,10 +1951,10 @@ MonoBehaviour:
   SpatialPartitioner: {fileID: 1231843020}
   AllTargets: []
   AllProximityTargets: []
-  FishNeighbourRadius: 3
+  FishNeighbourRadius: 10
   FishRepellantRadius: 1.5
   FishPredatorRadius: 8
-  FishEvadeRadius: 8
+  FishFleeRadius: 3
   FishCohesiveSwitchRatio: 0.75
   _fishCohesiveSwitchDistance: 0
   FishMaxAcceleration: 0.0004
@@ -1954,14 +1962,14 @@ MonoBehaviour:
   FishMinSpeed: 0.01
   FishMaxSpeed: 2
   FishCohesionWeight: 1
-  FishSeparationWeight: 2
-  FishAlignmentWeight: 2.25
+  FishSeparationWeight: 1
+  FishAlignmentWeight: 1.125
   FishPredatorWeight: 1
-  FishTargetWeight: 1
+  FishGoalWeight: 1
   SharkNeighbourRadius: 7
   SharkRepellantRadius: 3
   SharkPredatorRadius: 15
-  SharkEvadeRadius: 6
+  SharkFleeRadius: 6
   SharkCohesiveSwitchRatio: 0.75
   _sharkCohesiveSwitchDistance: 0
   SharkMaxAcceleration: 0.0008
@@ -1972,7 +1980,7 @@ MonoBehaviour:
   SharkSeparationWeight: 2
   SharkAlignmentWeight: 2.25
   SharkPredatorWeight: 1
-  SharkTargetWeight: 1
+  SharkGoalWeight: 1
 --- !u!4 &1231843022
 Transform:
   m_ObjectHideFlags: 0
@@ -1985,6 +1993,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &1268098055 stripped
 Transform:
   m_PrefabParentObject: {fileID: 452964, guid: 16de31618e96246d58e5eecfa39c5bd4, type: 2}
@@ -2610,6 +2619,10 @@ Prefab:
       propertyPath: m_LocalPosition.z
       value: 0.8
       objectReference: {fileID: 0}
+    - target: {fileID: 193016, guid: ff39a1078273f49a38a18bd928bd550d, type: 2}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: ff39a1078273f49a38a18bd928bd550d, type: 2}
   m_IsPrefabParent: 0
@@ -2629,15 +2642,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BoidsManager: {fileID: 0}
+  Fleeing: 0
+  HasPredators: 0
   Speed: 0
   Neighbours: []
   Repellants: []
   Predators: []
+  Prey: []
   TargetsWithinRange: []
-  Target: {fileID: 0}
+  Goal: {fileID: 0}
   _type: 1
   _neighbourTypes: 01000000
+  _preyTypes: 00000000
   _predatorTypes: 
+  _fleeTypes: 
   _flocks: 0
 --- !u!4 &1710463735 stripped
 Transform:
@@ -2824,7 +2842,7 @@ MonoBehaviour:
   _easeIn: 0
   _attractedTypes: 00000000
   _creationTime: 0
-  _radius: 4
+  _radius: 20
 --- !u!4 &2014922031
 Transform:
   m_ObjectHideFlags: 0
@@ -2837,6 +2855,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2057577999
 Prefab:
   m_ObjectHideFlags: 0

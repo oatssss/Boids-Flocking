@@ -11,10 +11,11 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
 
     [Header("Fish Settings")]
     [Header("Radii")]
+    [Range(0,20)]       public int   MaxFishFlockSize           = 10;
     [Range(0.1f,32f)]   public float FishNeighbourRadius        = 3f;
     [Range(0.1f,8f)]    public float FishRepellantRadius        = 1.5f;
     [Range(0.1f,64f)]   public float FishPredatorRadius         = 8f;
-    [Range(0.1f,64f)]   public float FishFleeRadius            = 2f;
+    [Range(0.1f,64f)]   public float FishFleeRadius             = 2f;
     [Range(0.01f,1f)]   public float FishCohesiveSwitchRatio    = 0.75f;
     [ReadOnly] [SerializeField] private float _fishCohesiveSwitchDistance;
 
@@ -25,19 +26,20 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
     [Range(0f,20f)] public float FishMaxSpeed = 2f;
 
     [Header("Weights")]
-    [Range(0f,5f)] public float FishCohesionWeight = 1f;
-    [Range(0f,5f)] public float FishSeparationWeight = 2f;
-    [Range(0f,5f)] public float FishAlignmentWeight = 2.25f;
-    [Range(0f,5f)] public float FishPredatorWeight = 1f;
-    [Range(0f,5f)] public float FishGoalWeight = 1f;
+    [Range(0f,5f)] public float FishCohesionWeight   = 1f;
+    [Range(0f,5f)] public float FishSeparationWeight = 1f;
+    [Range(0f,5f)] public float FishAlignmentWeight  = 1.125f;
+    [Range(0f,5f)] public float FishPredatorWeight   = 1f;
+    [Range(0f,5f)] public float FishGoalWeight       = 1f;
     [Space(20)]
 
     [Header("Shark Settings")]
     [Header("Radii")]
+    [Range(0,20)]       public int   MaxSharkFlockSize          = 0;
     [Range(0.1f,32f)]   public float SharkNeighbourRadius       = 7f;
     [Range(0.1f,8f)]    public float SharkRepellantRadius       = 3f;
     [Range(0.1f,64f)]   public float SharkPredatorRadius        = 15f;
-    [Range(0.1f,64f)]   public float SharkFleeRadius           = 6f;
+    [Range(0.1f,64f)]   public float SharkFleeRadius            = 6f;
     [Range(0.01f,1f)]   public float SharkCohesiveSwitchRatio   = 0.75f;
     [ReadOnly] [SerializeField] private float _sharkCohesiveSwitchDistance;
 
@@ -48,11 +50,11 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
     [Range(0f,20f)] public float SharkMaxSpeed = 4f;
 
     [Header("Weights")]
-    [Range(0f,5f)] public float SharkCohesionWeight = 1f;
+    [Range(0f,5f)] public float SharkCohesionWeight   = 1f;
     [Range(0f,5f)] public float SharkSeparationWeight = 2f;
-    [Range(0f,5f)] public float SharkAlignmentWeight = 2.25f;
-    [Range(0f,5f)] public float SharkPredatorWeight = 1f;
-    [Range(0f,5f)] public float SharkGoalWeight = 1f;
+    [Range(0f,5f)] public float SharkAlignmentWeight  = 2.25f;
+    [Range(0f,5f)] public float SharkPredatorWeight   = 1f;
+    [Range(0f,5f)] public float SharkGoalWeight       = 1f;
 
     // Cached items
     public float FishCohesiveSwitchDistance {

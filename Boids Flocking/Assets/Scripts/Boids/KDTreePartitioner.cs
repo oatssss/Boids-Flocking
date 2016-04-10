@@ -4,7 +4,7 @@ using System;
 
 public class KDTreePartitioner : BoidsPartitioner
 {
-    // [ReadOnly] [SerializeField] private Dictionary<Type,BoidsKDTree> Boids;
+    [ReadOnly] [SerializeField] private Dictionary<Type,BoidsKDTree> Boids;
 
     /// <summary>Performs a check based on K-Dimensional trees for boids neighbouring <paramref name="boid"/> within <paramref name="radius"/>.</summary>
     /// <param name="boid">The boid to use as origin of the radius.</param>
@@ -18,4 +18,6 @@ public class KDTreePartitioner : BoidsPartitioner
     {
         throw new NotImplementedException();
     }
+
+    // void FixedUpdate()
 }

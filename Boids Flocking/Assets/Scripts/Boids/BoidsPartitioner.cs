@@ -15,7 +15,18 @@ public abstract class BoidsPartitioner : MonoBehaviour
     {
         // Get the friendly types that 'boid' flocks with
         Boid.TYPE[] neighbourTypes = boid.NeighbourTypes;
-        return this.FindTypesWithinRadius(neighbourTypes, boid.NeighbourRadius, boid.transform.position);
+        Dictionary<Boid.TYPE,List<Boid>> potentialNeighbours = this.FindTypesWithinRadius(neighbourTypes, boid.NeighbourRadius, boid.transform.position);
+
+        foreach (Boid.TYPE type in potentialNeighbours.Keys)
+        {
+            List<Boid> typedNeighbours = potentialNeighbours[type];
+            foreach (Boid neighbour in typedNeighbours.ToArray())
+            {
+
+            }
+        }
+
+        return potentialNeighbours;
     }
 
     public Dictionary<Boid.TYPE, List<Boid>> FindRepellants(Boid boid)

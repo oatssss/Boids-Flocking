@@ -38,6 +38,9 @@ public class Shark : Boid
     protected override bool Flocks { get { return this._flocks; } }
 
     // Radii
+    public override int MaxFlockSize {
+        get { return this.BoidsManager.MaxSharkFlockSize; }
+    }
     public override float NeighbourRadius {
         get { return this.BoidsManager.SharkNeighbourRadius; }
     }

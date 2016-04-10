@@ -10,7 +10,6 @@ public abstract class Boid : MonoBehaviour {
     protected abstract ITargetSelector TargetSelector { get; }
     protected abstract IPreySelector PreySelector { get; }
     protected abstract GoalSelector GoalSelectorStrategy { get; }
-    [ReadOnly] public bool Fleeing;
 
     // Types
     public enum TYPE { FISH, SHARK }
@@ -21,6 +20,7 @@ public abstract class Boid : MonoBehaviour {
     public abstract TYPE[] FleeTypes { get; }
 
     // Radii
+    public abstract int   MaxFlockSize    { get; }
     public abstract float NeighbourRadius { get; }
     public abstract float RepellantRadius { get; }
     public abstract float PredatorRadius { get; }
@@ -74,7 +74,10 @@ public abstract class Boid : MonoBehaviour {
 #endif
     // Unlike the above lists, the boid does need to keep track of targets for the calculation since the target calculation occurs in stages
     [ReadOnly] [SerializeField] private List<BoidsTarget> TargetsWithinRange = new List<BoidsTarget>();
+    [SerializeField] private Transform LeaderTrail = null;  // The transform that following boids should aim for if this boid is a leader
     [ReadOnly] [SerializeField] private Transform Goal;
+    [ReadOnly] public bool Fleeing;
+    [ReadOnly] public bool HasPredators;
 
 	protected virtual void Start()
     {
@@ -95,6 +98,8 @@ public abstract class Boid : MonoBehaviour {
         Dictionary<Boid.TYPE,List<Boid>> prey       = this.BoidsManager.SpatialPartitioner.FindPrey(this);
         this.TargetsWithinRange                     = this.BoidsManager.SpatialPartitioner.FindTargetsNearBoid(this);
         this.Goal                                   = this.GetBestGoal(this.TargetsWithinRange, prey);
+
+        this.HasPredators = predators.Count > 0 ? true : false;
 
 #if UNITY_EDITOR
         // Update inspector lists
@@ -121,9 +126,12 @@ public abstract class Boid : MonoBehaviour {
 
         Vector3 cohesion        = this.Flocks ? (this.Fleeing ? -this.CalculateCohesion(neighbours) : this.CalculateCohesion(neighbours)) : Vector3.zero;
         Vector3 separation      = this.CalculateSeparation(repellants);
-        Vector3 alignment       = this.Flocks ? this.CalculateAlignment(neighbours) : Vector3.zero;
+        Vector3 alignment       = (this.Flocks && !this.Fleeing) ? this.CalculateAlignment(neighbours) : Vector3.zero;
         Vector3 avoidPredators  = this.CalculatePredators(predators);
         Vector3 goalSeeking     = this.CalculateGoal();
+
+        if (!this.Goal) { separation *= 0.3f; }
+        if (this.HasPredators) { separation *= 0.5f; }
 
         Vector3 updateVelocity = cohesion + separation + alignment + avoidPredators + goalSeeking;
 
@@ -198,7 +206,7 @@ public abstract class Boid : MonoBehaviour {
         if (neighbourCount > 0)
             { averageForward /= neighbourCount; }
 
-        return averageForward * this.AlignmentWeight * (this.NeighbourRadius/8f);
+        return averageForward * this.AlignmentWeight * (this.NeighbourRadius/4f);
     }
 
     protected virtual Vector3 CalculateSeparation(Dictionary<TYPE, List<Boid>> repellants)
@@ -217,7 +225,7 @@ public abstract class Boid : MonoBehaviour {
                 float diffMag = difference.magnitude;
                 diffMag = diffMag < 0.0001f ? 0.0001f : diffMag;
                 // We want boids farther away to have less separation effect
-                separation += difference.normalized * (((this.RepellantRadius/diffMag) - 1) * (2*this.SeparationWeight*(this.RepellantRadius)));
+                separation += difference.normalized * (((this.RepellantRadius/diffMag) - 1) * (4f*this.SeparationWeight*(this.RepellantRadius)));
                 repellantCount++;
             }
         }
@@ -244,6 +252,7 @@ public abstract class Boid : MonoBehaviour {
                     { fleeing = true;}
 
                 away += awayFromPredator.normalized;
+                away *= 4.75f;
             }
         }
 

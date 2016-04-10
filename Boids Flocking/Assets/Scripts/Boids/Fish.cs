@@ -39,6 +39,9 @@ public class Fish : Boid
     protected override bool Flocks { get { return this._flocks; } }
 
     // Radii
+    public override int MaxFlockSize {
+        get { return this.BoidsManager.MaxFishFlockSize; }
+    }
     public override float NeighbourRadius {
         get { return this.BoidsManager.FishNeighbourRadius; }
     }
