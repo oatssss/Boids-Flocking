@@ -39,5 +39,11 @@ namespace ExtensionMethods
 
             return clamped;
         }
+
+        public static void Populate<V>(this V[] arr, V value )
+        {
+            for (int i = 0; i < arr.Length; i++)
+                { arr[i] = value; }
+        }
     }
 }

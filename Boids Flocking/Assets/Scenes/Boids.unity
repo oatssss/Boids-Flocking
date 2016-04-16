@@ -1918,6 +1918,7 @@ GameObject:
   - 4: {fileID: 1231843022}
   - 114: {fileID: 1231843021}
   - 114: {fileID: 1231843020}
+  - 114: {fileID: 1231843023}
   m_Layer: 0
   m_Name: Boids Manager
   m_TagString: Untagged
@@ -1931,7 +1932,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1231843019}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c79b292edfd0542649ef525dc2c4526f, type: 3}
   m_Name: 
@@ -1948,10 +1949,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5475da97df774061a658ff810bd1d37, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SpatialPartitioner: {fileID: 1231843020}
-  AllTargets: []
-  AllProximityTargets: []
-  MaxFishFlockSize: 10
+  SpatialPartitioner: {fileID: 1231843023}
+  MaxFishFlockSize: 4
   FishNeighbourRadius: 6
   FishRepellantRadius: 1.5
   FishPredatorRadius: 10
@@ -1996,6 +1995,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1231843023
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1231843019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 822426d95c96f4995a6705188756630a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BoidsManager: {fileID: 0}
 --- !u!4 &1268098055 stripped
 Transform:
   m_PrefabParentObject: {fileID: 452964, guid: 16de31618e96246d58e5eecfa39c5bd4, type: 2}
@@ -2649,9 +2660,7 @@ MonoBehaviour:
   Repellants: []
   Predators: []
   Prey: []
-  TargetsWithinRange: []
   _flockLeader: {fileID: 0}
-  _flock: []
   LeaderTrail: {fileID: 0}
   Goal: {fileID: 0}
   Fleeing: 0
@@ -2847,7 +2856,7 @@ MonoBehaviour:
   _easeIn: 0
   _attractedTypes: 00000000
   _creationTime: 0
-  _radius: 20
+  _radius: 50
 --- !u!4 &2014922031
 Transform:
   m_ObjectHideFlags: 0

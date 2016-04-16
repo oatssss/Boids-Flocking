@@ -7,10 +7,10 @@ public class NoPartitioner : BoidsPartitioner
     /// <summary>Performs an n-squared check for boids neighbouring <paramref name="boid"/> within <paramref name="radius"/>.</summary>
     /// <param name="boid">The boid to use as origin of the radius.</param>
     /// <returns>A dictionary keyed by boid-type of the boids within the radius.</returns>
-    protected override Dictionary<Boid.TYPE,List<Boid>> FindTypesWithinRadius(Boid.TYPE[] types, float radius, Vector3 center)
+    protected override Dictionary<Boid.TYPE,HashSet<Boid>> FindTypesWithinRadius(Boid.TYPE[] types, float radius, Boid originBoid, int maximum = int.MaxValue)
     {
         // A dictionary that will hold the boids from each type within the radius
-        Dictionary<Boid.TYPE,List<Boid>> listsByType = new Dictionary<Boid.TYPE,List<Boid>>();
+        Dictionary<Boid.TYPE,HashSet<Boid>> setsByType = new Dictionary<Boid.TYPE,HashSet<Boid>>();
         foreach (Boid.TYPE type in types)
         {
             // If no boids exist in the scene for this type, skip
@@ -18,27 +18,29 @@ public class NoPartitioner : BoidsPartitioner
                 { continue; }
 
             // Otherwise, get all the boids in the scene of this type
-            List<Boid> boids = this.BoidsManager.AllBoids[type];
-
-            List<Boid> withinRange = new List<Boid>();   // Need a list to contain the boids that are found within radius
+            List<Boid> boids          = this.BoidsManager.AllBoids[type];
+            HashSet<Boid> withinRange = new HashSet<Boid>();
             foreach (Boid potential in boids)
             {
+                if (withinRange.Count >= maximum)
+                    { break; }
+
                 // Is the boid within radius? Then add to list
-                if ((potential.transform.position - center).magnitude < radius)
+                if ((potential.transform.position - originBoid.transform.position).magnitude < radius)
                     { withinRange.Add(potential); }
             }
 
             // Add the found neighbours of this type to the dictionary
             if (withinRange.Count > 0)
-                { listsByType.Add(type, withinRange); }
+                { setsByType.Add(type, withinRange); }
         }
 
-        return listsByType;
+        return setsByType;
     }
 
-    public override List<BoidsTarget> FindTargetsNearBoid(Boid boid)
+    public override HashSet<ProximityTarget> FindTargetsNearBoid(Boid boid)
     {
-        List<BoidsTarget> targets = new List<BoidsTarget>();
+        HashSet<ProximityTarget> targets = new HashSet<ProximityTarget>();
         foreach (ProximityTarget target in this.BoidsManager.AllProximityTargets)
         {
             float sqrDistance = (target.transform.position - boid.transform.position).sqrMagnitude;

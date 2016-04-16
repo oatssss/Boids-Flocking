@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using ExtensionMethods;
 using System.Linq;
+using System.Diagnostics;
 
 public abstract class Boid : MonoBehaviour {
 
@@ -45,7 +46,7 @@ public abstract class Boid : MonoBehaviour {
 
 #if UNITY_EDITOR
     #pragma warning disable 0414    // Private field assigned but not used.
-    // Lists
+    // Sets
     [ReadOnly] [SerializeField] private List<Boid> Neighbours = new List<Boid>();
     [ReadOnly] [SerializeField] private List<Boid> Repellants = new List<Boid>();
     [ReadOnly] [SerializeField] private List<Boid> Predators = new List<Boid>();
@@ -67,24 +68,34 @@ public abstract class Boid : MonoBehaviour {
 
     void Update()
     {
+        if (this.transform.localScale.magnitude != 1)
+        {
+            UnityEngine.Debug.LogWarningFormat("{0} has a non-unit scale, resetting...", this);
+            this.transform.localScale = Vector3.one;
+        }
+
         this.NeighbourCollider.radius   = this.NeighbourRadius;
         this.RepellantCollider.radius   = this.RepellantRadius;
         this.PredatorCollider.radius    = this.PredatorRadius;
     }
 #endif
-    // Unlike the above lists, the boid does need to keep track of targets for the calculation since the target calculation occurs in stages
-    [ReadOnly] [SerializeField] private List<BoidsTarget> TargetsWithinRange = new List<BoidsTarget>();
+    // Unlike the above sets, the boid does need to keep track of targets for the calculation since the target calculation occurs in stages
+    [ReadOnly] [SerializeField] private HashSet<ProximityTarget> TargetsWithinRange = new HashSet<ProximityTarget>();
     [SerializeField] private Boid _flockLeader;
     public Boid FlockLeader {
-        get { return this._flockLeader; }
+        get {
+            if (this._flockLeader == null)
+                { this._flockLeader = this; }
+            return this._flockLeader;
+        }
         set {
             this.Flock.Remove(this);
             this._flockLeader = value;
             this.Flock.Add(this);
         }
     }
-    [ReadOnly] [SerializeField] private List<Boid> _flock = new List<Boid>();
-    private List<Boid> Flock {
+    [ReadOnly] [SerializeField] private HashSet<Boid> _flock = new HashSet<Boid>();
+    public HashSet<Boid> Flock {
         get { return (this.IsFlockLeader || this.FlockLeader == null) ? this._flock : this.FlockLeader._flock; }
     }
     public bool IsFlockLeader { get { return this.FlockLeader == this; } }
@@ -115,7 +126,8 @@ public abstract class Boid : MonoBehaviour {
         {
             foreach (Boid follower in this.Flock)
             {
-                follower.FlockLeader = follower;
+                if (follower != this)
+                    { follower.FlockLeader = follower; }
             }
         }
         this.FlockLeader = this;
@@ -124,13 +136,17 @@ public abstract class Boid : MonoBehaviour {
 
     protected virtual void FixedUpdate()
     {
-        Dictionary<Boid.TYPE,List<Boid>> neighbours = this.BoidsManager.SpatialPartitioner.FindNeighbours(this);
-        // Dictionary<Boid.TYPE,List<Boid>> repellants = this.BoidsManager.SpatialPartitioner.FindRepellants(this);
-        Dictionary<Boid.TYPE,List<Boid>> repellants = neighbours;
-        Dictionary<Boid.TYPE,List<Boid>> predators  = this.BoidsManager.SpatialPartitioner.FindPredators(this);
-        Dictionary<Boid.TYPE,List<Boid>> prey       = this.BoidsManager.SpatialPartitioner.FindPrey(this);
-        this.TargetsWithinRange                     = this.BoidsManager.SpatialPartitioner.FindTargetsNearBoid(this);
-        this.Goal                                   = this.GetBestGoal(this.TargetsWithinRange, prey);
+        Dictionary<Boid.TYPE,HashSet<Boid>> neighbours = this.BoidsManager.SpatialPartitioner.FindNeighbours(this);
+        Stopwatch watch = Stopwatch.StartNew();
+        Dictionary<Boid.TYPE,HashSet<Boid>> repellants = this.BoidsManager.SpatialPartitioner.FindRepellants(this);
+        watch.Stop();
+        // Dictionary<Boid.TYPE,HashSet<Boid>> repellants = neighbours;
+        Dictionary<Boid.TYPE,HashSet<Boid>> predators  = this.BoidsManager.SpatialPartitioner.FindPredators(this);
+        Dictionary<Boid.TYPE,HashSet<Boid>> prey       = this.BoidsManager.SpatialPartitioner.FindPrey(this);
+        this.TargetsWithinRange                        = this.BoidsManager.SpatialPartitioner.FindTargetsNearBoid(this);
+        this.Goal                                      = this.GetBestGoal(this.TargetsWithinRange, prey);
+
+        // UnityEngine.Debug.LogWarningFormat("ELAPSED: {0}", watch.Elapsed);
 
         this.HasPredators = predators.Count > 0 ? true : false;
 
@@ -162,11 +178,12 @@ public abstract class Boid : MonoBehaviour {
         Vector3 alignment       = (this.Flocks && !this.Fleeing) ? this.CalculateAlignment(neighbours) : Vector3.zero;
         Vector3 avoidPredators  = this.CalculatePredators(predators);
         Vector3 goalSeeking     = this.CalculateGoal();
+        Vector3 wander          = this.CalculateWander();
 
         if (!this.Goal || this.HasPredators) { separation *= 0.3f; }
         // if (this.HasPredators) { separation *= 0.3f; }
 
-        Vector3 updateVelocity = cohesion + separation + alignment + avoidPredators + goalSeeking;
+        Vector3 updateVelocity = cohesion + separation + alignment + avoidPredators + goalSeeking + wander;
 
         // Update rotation
         Quaternion updateQuaternion = Quaternion.LookRotation(updateVelocity);
@@ -184,12 +201,12 @@ public abstract class Boid : MonoBehaviour {
         this.transform.position = this.transform.position + updateVelocity;
     }
 
-    protected virtual Vector3 CalculateCohesion(Dictionary<TYPE, List<Boid>> neighbours)
+    protected virtual Vector3 CalculateCohesion(Dictionary<TYPE, HashSet<Boid>> neighbours)
     {
         Vector3 centerOfMass = Vector3.zero;
         int neighbourCount = 0;
         // Iterate over all neighbour types
-        foreach (List<Boid> typeSection in neighbours.Values)
+        foreach (HashSet<Boid> typeSection in neighbours.Values)
         {
             // Iterate over all neighbours of that type
             foreach (Boid neighbour in typeSection)
@@ -219,11 +236,11 @@ public abstract class Boid : MonoBehaviour {
         return toCoM * this.CohesionWeight;
     }
 
-    protected virtual Vector3 CalculateAlignment(Dictionary<TYPE, List<Boid>> neighbours)
+    protected virtual Vector3 CalculateAlignment(Dictionary<TYPE, HashSet<Boid>> neighbours)
     {
         Vector3 averageForward = Vector3.zero;
         int neighbourCount = 0;
-        foreach (List<Boid> typeSection in neighbours.Values)
+        foreach (HashSet<Boid> typeSection in neighbours.Values)
         {
             foreach (Boid neighbour in typeSection)
             {
@@ -242,11 +259,11 @@ public abstract class Boid : MonoBehaviour {
         return averageForward * this.AlignmentWeight * (this.NeighbourRadius/4f);
     }
 
-    protected virtual Vector3 CalculateSeparation(Dictionary<TYPE, List<Boid>> repellants)
+    protected virtual Vector3 CalculateSeparation(Dictionary<TYPE, HashSet<Boid>> repellants)
     {
         Vector3 separation = Vector3.zero;
         int repellantCount = 0;
-        foreach (List<Boid> typeSection in repellants.Values)
+        foreach (HashSet<Boid> typeSection in repellants.Values)
         {
             foreach (Boid repellant in typeSection)
             {
@@ -269,13 +286,13 @@ public abstract class Boid : MonoBehaviour {
         return separation * this.SeparationWeight;
     }
 
-    protected virtual Vector3 CalculatePredators(Dictionary<TYPE, List<Boid>> predators)
+    protected virtual Vector3 CalculatePredators(Dictionary<TYPE, HashSet<Boid>> predators)
     {
         Vector3 away = Vector3.zero;
         bool fleeing = false;
         foreach (TYPE type in predators.Keys)
         {
-            List<Boid> typedPredators = predators[type];
+            HashSet<Boid> typedPredators = predators[type];
             foreach (Boid predator in typedPredators)
             {
                 Vector3 awayFromPredator = this.transform.position - predator.transform.position;
@@ -302,7 +319,12 @@ public abstract class Boid : MonoBehaviour {
         return toGoal * this.GoalWeight * (this.NeighbourRadius/2f);
     }
 
-    protected Transform GetBestGoal(List<BoidsTarget> targets, Dictionary<TYPE, List<Boid>> prey)
+    protected virtual Vector3 CalculateWander()
+    {
+        return this.transform.forward * 0.1f;
+    }
+
+    protected Transform GetBestGoal(HashSet<ProximityTarget> targets, Dictionary<TYPE, HashSet<Boid>> prey)
     {
         return this.GoalSelectorStrategy.GetBestGoal(this, targets, prey);
     }
@@ -315,12 +337,12 @@ public abstract class Boid : MonoBehaviour {
 
     protected interface IPreySelector
     {
-        Boid GetBestPrey(Boid predator, Dictionary<TYPE, List<Boid>> prey);
+        Boid GetBestPrey(Boid predator, Dictionary<TYPE, HashSet<Boid>> prey);
     }
 
     protected interface ITargetSelector
     {
-        BoidsTarget GetBestTarget(Boid originBoid, List<BoidsTarget> targets);
+        BoidsTarget GetBestTarget(Boid originBoid, HashSet<ProximityTarget> targets);
     }
 
     protected abstract class GoalSelector
@@ -334,13 +356,13 @@ public abstract class Boid : MonoBehaviour {
             this.PreySelector = preySelector;
         }
 
-        public abstract Transform GetBestGoal(Boid originBoid, List<BoidsTarget> targets, Dictionary<TYPE, List<Boid>> prey);
+        public abstract Transform GetBestGoal(Boid originBoid, HashSet<ProximityTarget> targets, Dictionary<TYPE, HashSet<Boid>> prey);
     }
 
     protected class PreyFirstSelector : GoalSelector
     {
         public PreyFirstSelector(ITargetSelector targetSelector, IPreySelector preySelector) : base(targetSelector, preySelector) {}
-        public override Transform GetBestGoal(Boid originBoid, List<BoidsTarget> targets, Dictionary<TYPE, List<Boid>> prey)
+        public override Transform GetBestGoal(Boid originBoid, HashSet<ProximityTarget> targets, Dictionary<TYPE, HashSet<Boid>> prey)
         {
             Boid bestPrey = this.PreySelector.GetBestPrey(originBoid, prey);
 
@@ -355,13 +377,13 @@ public abstract class Boid : MonoBehaviour {
 
     protected class ClosestPreySelector : IPreySelector
     {
-        public Boid GetBestPrey(Boid predator, Dictionary<TYPE, List<Boid>> prey)
+        public Boid GetBestPrey(Boid predator, Dictionary<TYPE, HashSet<Boid>> prey)
         {
             Boid best = null;
             float sqrDistanceToBest = 0f;
             foreach (TYPE type in prey.Keys)
             {
-                List<Boid> typedPrey = prey[type];
+                HashSet<Boid> typedPrey = prey[type];
                 foreach (Boid potential in typedPrey)
                 {
                     float sqrDistanceToPotential = (potential.transform.position - predator.transform.position).sqrMagnitude;
@@ -388,7 +410,7 @@ public abstract class Boid : MonoBehaviour {
 
     protected class ClosestTargetSelector : ITargetSelector
     {
-        public BoidsTarget GetBestTarget(Boid originBoid, List<BoidsTarget> targets)
+        public BoidsTarget GetBestTarget(Boid originBoid, HashSet<ProximityTarget> targets)
         {
             BoidsTarget best = null;
             float sqrDistanceToBest = 0f;
@@ -417,7 +439,7 @@ public abstract class Boid : MonoBehaviour {
 
     protected class MostRecentSelector : ITargetSelector
     {
-        public BoidsTarget GetBestTarget(Boid originBoid, List<BoidsTarget> targets)
+        public BoidsTarget GetBestTarget(Boid originBoid, HashSet<ProximityTarget> targets)
         {
             BoidsTarget best = null;
             float bestCreationTime = float.PositiveInfinity;

@@ -64,6 +64,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 452964}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &407008
 Transform:
   m_ObjectHideFlags: 1
@@ -76,6 +77,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 452964}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &452964
 Transform:
   m_ObjectHideFlags: 1
@@ -90,6 +92,7 @@ Transform:
   - {fileID: 404712}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &2312082
 MeshRenderer:
   m_ObjectHideFlags: 1
@@ -99,13 +102,14 @@ MeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
   m_Materials:
   - {fileID: 2100000, guid: b8cd114c06729ff46b2ec1b2b5787d75, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
-  m_UseLightProbes: 1
-  m_ReflectionProbeUsage: 1
   m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
@@ -125,13 +129,14 @@ MeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
   m_Materials:
   - {fileID: 2100000, guid: c5bdabd0b7dd38f438a4342fba36eddb, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
-  m_UseLightProbes: 1
-  m_ReflectionProbeUsage: 1
   m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
@@ -196,14 +201,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BoidsManager: {fileID: 0}
-  Fleeing: 0
   Speed: 0
   Neighbours: []
   Repellants: []
   Predators: []
   Prey: []
   TargetsWithinRange: []
+  _flockLeader: {fileID: 0}
+  _flock: []
+  LeaderTrail: {fileID: 0}
   Goal: {fileID: 0}
+  Fleeing: 0
+  HasPredators: 0
   _type: 0
   _neighbourTypes: 00000000
   _preyTypes: 

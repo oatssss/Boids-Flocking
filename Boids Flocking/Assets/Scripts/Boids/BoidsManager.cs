@@ -5,8 +5,8 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
 
     public BoidsPartitioner SpatialPartitioner;
 	[ReadOnly] public Dictionary<Boid.TYPE,List<Boid>> AllBoids = new Dictionary<Boid.TYPE,List<Boid>>();
-    [ReadOnly] public List<BoidsTarget> AllTargets = new List<BoidsTarget>();
-    [ReadOnly] public List<ProximityTarget> AllProximityTargets = new List<ProximityTarget>();
+    [ReadOnly] public HashSet<BoidsTarget> AllTargets = new HashSet<BoidsTarget>();
+    [ReadOnly] public HashSet<ProximityTarget> AllProximityTargets = new HashSet<ProximityTarget>();
     [Space(10)]
 
     [Header("Fish Settings")]

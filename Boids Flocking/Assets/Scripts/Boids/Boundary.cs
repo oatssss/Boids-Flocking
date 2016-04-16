@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BoidsKDTree {
+public class Boundary : MonoBehaviour {
 
 
 }
