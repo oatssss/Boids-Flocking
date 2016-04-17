@@ -7,6 +7,8 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
 	[ReadOnly] public Dictionary<Boid.TYPE,List<Boid>> AllBoids = new Dictionary<Boid.TYPE,List<Boid>>();
     [ReadOnly] public HashSet<BoidsTarget> AllTargets = new HashSet<BoidsTarget>();
     [ReadOnly] public HashSet<ProximityTarget> AllProximityTargets = new HashSet<ProximityTarget>();
+    [ReadOnly] public HashSet<HardBoundary> AllHardBoundaries = new HashSet<HardBoundary>();
+    [ReadOnly] public HashSet<SoftBoundary> AllSoftBoundaries = new HashSet<SoftBoundary>();
     [Space(10)]
 
     [Header("Fish Settings")]
@@ -31,6 +33,7 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
     [Range(0f,5f)] public float FishAlignmentWeight  = 1.125f;
     [Range(0f,5f)] public float FishPredatorWeight   = 1f;
     [Range(0f,5f)] public float FishGoalWeight       = 1f;
+    [Range(0f,5f)] public float FishBoundaryWeight   = 1f;
     [Space(20)]
 
     [Header("Shark Settings")]
@@ -55,6 +58,7 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
     [Range(0f,5f)] public float SharkAlignmentWeight  = 2.25f;
     [Range(0f,5f)] public float SharkPredatorWeight   = 1f;
     [Range(0f,5f)] public float SharkGoalWeight       = 1f;
+    [Range(0f,5f)] public float SharkBoundaryWeight   = 1f;
 
     // Cached items
     public float FishCohesiveSwitchDistance {
@@ -137,5 +141,25 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
     public void DeregisterProximityTarget(ProximityTarget target)
     {
         this.AllProximityTargets.Remove(target);
+    }
+
+    public void RegisterHardBoundary(HardBoundary hardBound)
+    {
+        this.AllHardBoundaries.Add(hardBound);
+    }
+
+    public void RegisterSoftBoundary(SoftBoundary softBound)
+    {
+        this.AllSoftBoundaries.Add(softBound);
+    }
+
+    public void DeregisterHardBoundary(HardBoundary hardBound)
+    {
+        this.AllHardBoundaries.Remove(hardBound);
+    }
+
+    public void DeregisterSoftBoundary(SoftBoundary softBound)
+    {
+        this.AllSoftBoundaries.Remove(softBound);
     }
 }

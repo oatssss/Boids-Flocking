@@ -91,4 +91,7 @@ public class Fish : Boid
     protected override float GoalWeight {
         get { return this.BoidsManager.FishGoalWeight; }
     }
+    protected override float BoundaryWeight {
+        get { return this.BoidsManager.FishBoundaryWeight; }
+    }
 }

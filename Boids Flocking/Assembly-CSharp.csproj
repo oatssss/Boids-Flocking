@@ -54,11 +54,13 @@
      <Compile Include="Assets\Scripts\Boids\BoidsTarget.cs" />
      <Compile Include="Assets\Scripts\Boids\Boundary.cs" />
      <Compile Include="Assets\Scripts\Boids\Fish.cs" />
+     <Compile Include="Assets\Scripts\Boids\HardBoundary.cs" />
      <Compile Include="Assets\Scripts\Boids\KDTree.cs" />
      <Compile Include="Assets\Scripts\Boids\KDTreePartitioner.cs" />
      <Compile Include="Assets\Scripts\Boids\NoPartitioner.cs" />
      <Compile Include="Assets\Scripts\Boids\ProximityTarget.cs" />
      <Compile Include="Assets\Scripts\Boids\Shark.cs" />
+     <Compile Include="Assets\Scripts\Boids\SoftBoundary.cs" />
      <Compile Include="Assets\Scripts\Boids\SpatialHashPartitioner.cs" />
      <Compile Include="Assets\Scripts\Utilities\ExtensionMethods.cs" />
      <Compile Include="Assets\Scripts\Utilities\ReadOnlyAttribute.cs" />

@@ -90,4 +90,7 @@ public class Shark : Boid
     protected override float GoalWeight {
         get { return this.BoidsManager.SharkGoalWeight; }
     }
+    protected override float BoundaryWeight {
+        get { return this.BoidsManager.SharkBoundaryWeight; }
+    }
 }

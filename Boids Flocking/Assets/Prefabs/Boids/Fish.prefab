@@ -9,7 +9,8 @@ GameObject:
   m_Component:
   - 4: {fileID: 452964}
   - 114: {fileID: 11491280}
-  m_Layer: 0
+  - 136: {fileID: 136000013061809316}
+  m_Layer: 8
   m_Name: Fish
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -27,7 +28,7 @@ GameObject:
   - 33: {fileID: 3304666}
   - 23: {fileID: 2312082}
   - 111: {fileID: 11138588}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -45,7 +46,7 @@ GameObject:
   - 33: {fileID: 3364550}
   - 23: {fileID: 2312876}
   - 111: {fileID: 11129874}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: TropicalFish12
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -200,15 +201,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 149e0503cfcc845f8a53288c825f8fa3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BoidsManager: {fileID: 0}
   Speed: 0
+  OutOfHardBounds: 1
+  OutOfSoftBounds: 0
   Neighbours: []
   Repellants: []
   Predators: []
   Prey: []
-  TargetsWithinRange: []
   _flockLeader: {fileID: 0}
-  _flock: []
   LeaderTrail: {fileID: 0}
   Goal: {fileID: 0}
   Fleeing: 0
@@ -230,3 +230,16 @@ Prefab:
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 124692}
   m_IsPrefabParent: 1
+--- !u!136 &136000013061809316
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 124692}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.1
+  m_Height: 0.45
+  m_Direction: 2
+  m_Center: {x: 0, y: 0, z: 0}

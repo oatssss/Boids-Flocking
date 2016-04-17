@@ -3,7 +3,7 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 
-public class SpatialHashPartitioner : BoidsPartitioner
+public class SpatialHashPartitioner : NoPartitioner
 {
     /// <summary>Performs a check based on spacial hashing for boids neighbouring <paramref name="boid"/> within <paramref name="radius"/>.</summary>
     /// <param name="boid">The boid to use as origin of the radius.</param>

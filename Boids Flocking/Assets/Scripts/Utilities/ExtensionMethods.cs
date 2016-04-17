@@ -45,5 +45,16 @@ namespace ExtensionMethods
             for (int i = 0; i < arr.Length; i++)
                 { arr[i] = value; }
         }
+
+        public static void EnforceLayerMembership(this MonoBehaviour behaviour, string layer)
+        {
+            int layerIndex = LayerMask.NameToLayer(layer);
+
+            if (behaviour.gameObject.layer != layerIndex)
+            {
+                Debug.LogWarningFormat("{0} does not belong to {1}, reassigning...", behaviour, layer);
+                behaviour.gameObject.layer = layerIndex;
+            }
+        }
     }
 }

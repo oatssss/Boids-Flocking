@@ -60,4 +60,21 @@ public class NoPartitioner : BoidsPartitioner
 
         return targets;
     }
+
+    public override HardBoundary FindClosestHardBound(Boid boid)
+    {
+        float bestDistance = float.PositiveInfinity;
+        HardBoundary bestBound = null;
+        foreach (HardBoundary bound in this.BoidsManager.AllHardBoundaries)
+        {
+            float distance = (bound.transform.position - boid.transform.position).magnitude;
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                bestBound = bound;
+            }
+        }
+
+        return bestBound;
+    }
 }

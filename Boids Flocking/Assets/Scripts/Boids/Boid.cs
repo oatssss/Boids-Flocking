@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 public abstract class Boid : MonoBehaviour {
 
-    [ReadOnly] [SerializeField] protected BoidsManager BoidsManager;
+    [SerializeField] protected BoidsManager BoidsManager { get { return BoidsManager.Instance; } }
     protected abstract bool Flocks { get; }
     protected abstract ITargetSelector TargetSelector { get; }
     protected abstract IPreySelector PreySelector { get; }
@@ -43,6 +43,15 @@ public abstract class Boid : MonoBehaviour {
     protected abstract float AlignmentWeight { get; }
     protected abstract float PredatorWeight { get; }
     protected abstract float GoalWeight { get; }
+    protected abstract float BoundaryWeight { get; }
+
+    // Boundaries
+    protected HashSet<HardBoundary> EncapsulatingHardBounds = new HashSet<HardBoundary>();
+    protected HashSet<SoftBoundary> EncapsulatingSoftBounds = new HashSet<SoftBoundary>();
+    protected HardBoundary LastEncounteredHardBound;
+    protected SoftBoundary LastEncounteredSoftBound;
+    [ReadOnly] [SerializeField] protected bool OutOfHardBounds = true;
+    [ReadOnly] [SerializeField] protected bool OutOfSoftBounds;
 
 #if UNITY_EDITOR
     #pragma warning disable 0414    // Private field assigned but not used.
@@ -51,15 +60,25 @@ public abstract class Boid : MonoBehaviour {
     [ReadOnly] [SerializeField] private List<Boid> Repellants = new List<Boid>();
     [ReadOnly] [SerializeField] private List<Boid> Predators = new List<Boid>();
     [ReadOnly] [SerializeField] private List<Boid> Prey = new List<Boid>();
+    [ReadOnly] [SerializeField] private List<Boid> FlockList = new List<Boid>();
     private SphereCollider NeighbourCollider;
     private SphereCollider RepellantCollider;
     private SphereCollider PredatorCollider;
 
     void Awake()
     {
-        this.NeighbourCollider  = this.gameObject.AddComponent<SphereCollider>();
-        this.RepellantCollider  = this.gameObject.AddComponent<SphereCollider>();
-        this.PredatorCollider   = this.gameObject.AddComponent<SphereCollider>();
+        // DISCLAIMER: METHOD IS WITHIN PRECOMPILER BLOCK
+        this.EnforceLayerMembership("Boids");
+
+        GameObject colliderContainer = new GameObject();
+        colliderContainer.name = "Colliders";
+        colliderContainer.transform.SetParent(this.transform);
+        colliderContainer.transform.position = Vector3.zero;
+        colliderContainer.layer = 0;
+
+        this.NeighbourCollider  = colliderContainer.AddComponent<SphereCollider>();
+        this.RepellantCollider  = colliderContainer.AddComponent<SphereCollider>();
+        this.PredatorCollider   = colliderContainer.AddComponent<SphereCollider>();
 
         this.NeighbourCollider.enabled  = false;
         this.RepellantCollider.enabled  = false;
@@ -68,85 +87,68 @@ public abstract class Boid : MonoBehaviour {
 
     void Update()
     {
-        if (this.transform.localScale.magnitude != 1)
-        {
-            UnityEngine.Debug.LogWarningFormat("{0} has a non-unit scale, resetting...", this);
-            this.transform.localScale = Vector3.one;
-        }
-
         this.NeighbourCollider.radius   = this.NeighbourRadius;
         this.RepellantCollider.radius   = this.RepellantRadius;
         this.PredatorCollider.radius    = this.PredatorRadius;
     }
+
 #endif
     // Unlike the above sets, the boid does need to keep track of targets for the calculation since the target calculation occurs in stages
     [ReadOnly] [SerializeField] private HashSet<ProximityTarget> TargetsWithinRange = new HashSet<ProximityTarget>();
-    [SerializeField] private Boid _flockLeader;
-    public Boid FlockLeader {
-        get {
-            if (this._flockLeader == null)
-                { this._flockLeader = this; }
-            return this._flockLeader;
-        }
-        set {
-            this.Flock.Remove(this);
-            this._flockLeader = value;
-            this.Flock.Add(this);
-        }
-    }
-    [ReadOnly] [SerializeField] private HashSet<Boid> _flock = new HashSet<Boid>();
-    public HashSet<Boid> Flock {
-        get { return (this.IsFlockLeader || this.FlockLeader == null) ? this._flock : this.FlockLeader._flock; }
-    }
-    public bool IsFlockLeader { get { return this.FlockLeader == this; } }
-    public int FlockSize { get { return this.Flock.Count; } }
-    public int InheritedMaxFlockSize { get { return this.FlockLeader.MaxFlockSize; } }
-    [SerializeField] private Transform LeaderTrail = null;  // The transform that following boids should aim for if this boid is a leader
     [ReadOnly] [SerializeField] private Transform Goal;
     [ReadOnly] public bool Fleeing;
     [ReadOnly] public bool HasPredators;
 
 	protected virtual void Start()
     {
-        this.BoidsManager = BoidsManager.Instance;
         this.BoidsManager.RegisterBoid(this);
-        // this._flockLeader = this;   // First initialize to have previous
-        this.FlockLeader = this;
     }
 
     protected virtual void OnDestroy()
     {
         this.BoidsManager.DeregisterBoid(this);
-        this.Isolate(); // Possible that things develop more references to this before being destroyed?
     }
 
-    public void Isolate()
+    public void EnterHardBound(HardBoundary hardBound)
     {
-        if (this.IsFlockLeader)
+        this.EncapsulatingHardBounds.Add(hardBound);
+        this.OutOfHardBounds = false;
+    }
+
+    public void EnterSoftBound(SoftBoundary softBound)
+    {
+        this.EncapsulatingSoftBounds.Add(softBound);
+        this.OutOfSoftBounds = false;
+    }
+
+    public void ExitHardBound(HardBoundary hardBound)
+    {
+        this.EncapsulatingHardBounds.Remove(hardBound);
+        if (this.EncapsulatingHardBounds.Count() <= 0)
         {
-            foreach (Boid follower in this.Flock)
-            {
-                if (follower != this)
-                    { follower.FlockLeader = follower; }
-            }
+            this.LastEncounteredHardBound = hardBound;
+            this.OutOfHardBounds = true;
         }
-        this.FlockLeader = this;
-        // this.Flock.Clear(); // Commented because we want the leader to be counted in the flock
+    }
+
+    public void ExitSoftBound(SoftBoundary softBound)
+    {
+        this.EncapsulatingSoftBounds.Remove(softBound);
+        if (this.EncapsulatingSoftBounds.Count() <= 0)
+        {
+            this.LastEncounteredSoftBound = softBound;
+            this.OutOfSoftBounds = true;
+        }
     }
 
     protected virtual void FixedUpdate()
     {
         Dictionary<Boid.TYPE,HashSet<Boid>> neighbours = this.BoidsManager.SpatialPartitioner.FindNeighbours(this);
-        Stopwatch watch = Stopwatch.StartNew();
         Dictionary<Boid.TYPE,HashSet<Boid>> repellants = this.BoidsManager.SpatialPartitioner.FindRepellants(this);
-        watch.Stop();
-        // Dictionary<Boid.TYPE,HashSet<Boid>> repellants = neighbours;
         Dictionary<Boid.TYPE,HashSet<Boid>> predators  = this.BoidsManager.SpatialPartitioner.FindPredators(this);
         Dictionary<Boid.TYPE,HashSet<Boid>> prey       = this.BoidsManager.SpatialPartitioner.FindPrey(this);
         this.TargetsWithinRange                        = this.BoidsManager.SpatialPartitioner.FindTargetsNearBoid(this);
         this.Goal                                      = this.GetBestGoal(this.TargetsWithinRange, prey);
-
-        // UnityEngine.Debug.LogWarningFormat("ELAPSED: {0}", watch.Elapsed);
 
         this.HasPredators = predators.Count > 0 ? true : false;
 
@@ -179,11 +181,12 @@ public abstract class Boid : MonoBehaviour {
         Vector3 avoidPredators  = this.CalculatePredators(predators);
         Vector3 goalSeeking     = this.CalculateGoal();
         Vector3 wander          = this.CalculateWander();
+        Vector3 boundary        = this.CalculateBoundary();
 
         if (!this.Goal || this.HasPredators) { separation *= 0.3f; }
         // if (this.HasPredators) { separation *= 0.3f; }
 
-        Vector3 updateVelocity = cohesion + separation + alignment + avoidPredators + goalSeeking + wander;
+        Vector3 updateVelocity = cohesion + separation + alignment + avoidPredators + goalSeeking + wander + boundary;
 
         // Update rotation
         Quaternion updateQuaternion = Quaternion.LookRotation(updateVelocity);
@@ -322,6 +325,24 @@ public abstract class Boid : MonoBehaviour {
     protected virtual Vector3 CalculateWander()
     {
         return this.transform.forward * 0.1f;
+    }
+
+    protected virtual Vector3 CalculateBoundary()
+    {
+        if (this.LastEncounteredHardBound == null)
+            { this.LastEncounteredHardBound = this.BoidsManager.SpatialPartitioner.FindClosestHardBound(this); }
+
+        // Do the same for soft bound?
+
+        Vector3 towardsBound = Vector3.zero;
+
+        if (this.OutOfHardBounds)
+            { towardsBound = this.LastEncounteredHardBound.transform.position - this.transform.position; }
+
+        if (this.OutOfSoftBounds && this.Goal == null)
+            { towardsBound = this.LastEncounteredSoftBound.transform.position - this.transform.position; }
+
+        return towardsBound * this.BoundaryWeight/2.5f;
     }
 
     protected Transform GetBestGoal(HashSet<ProximityTarget> targets, Dictionary<TYPE, HashSet<Boid>> prey)
