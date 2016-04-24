@@ -37,6 +37,12 @@ public class Shark : Boid
     [SerializeField] private bool _flocks = false;
     protected override bool Flocks { get { return this._flocks; } }
 
+    void OnCollisionEnter(Collision other)
+    {
+        Destroy(other.gameObject);
+        this.BoidsManager.Invoke("SpawnFish", 3f);
+    }
+
     // Radii
     public override int MaxFlockSize {
         get { return this.BoidsManager.MaxSharkFlockSize; }
@@ -72,6 +78,25 @@ public class Shark : Boid
     }
     protected override float MinSpeed {
         get { return this.BoidsManager.SharkMinSpeed; }
+    }
+    protected override float TurnRadius {
+        get {
+            float scalar = 1;
+
+            if (this.Goal != null)
+            {
+                Vector3 toGoal = this.Goal.transform.position - this.transform.position;
+                float distance = toGoal.magnitude;
+                toGoal = toGoal.normalized;
+                float angle = Mathf.Abs(Vector3.Dot(this.transform.forward, toGoal));
+                if (distance < 1.5f && angle < 0.3)
+                {
+                    scalar = angle;
+                }
+            }
+
+            return this.BoidsManager.SharkTurnRadius * scalar;
+        }
     }
 
     // Weights

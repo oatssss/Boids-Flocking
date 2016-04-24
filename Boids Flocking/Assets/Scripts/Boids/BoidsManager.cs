@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using ExtensionMethods;
 
 public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
 
@@ -9,6 +10,7 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
     [ReadOnly] public HashSet<ProximityTarget> AllProximityTargets = new HashSet<ProximityTarget>();
     [ReadOnly] public HashSet<HardBoundary> AllHardBoundaries = new HashSet<HardBoundary>();
     [ReadOnly] public HashSet<SoftBoundary> AllSoftBoundaries = new HashSet<SoftBoundary>();
+    [SerializeField] private Fish FishPrefab;
     [Space(10)]
 
     [Header("Fish Settings")]
@@ -26,6 +28,7 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
     [Range(0.0001f,0.001f)] public float FishMaxDeceleration = 0.0005f;
     [Range(0f,0.1f)] public float FishMinSpeed = 0.01f;
     [Range(0f,20f)] public float FishMaxSpeed = 2f;
+    [Range(0f,2f)] public float FishTurnRadius = 1f;
 
     [Header("Weights")]
     [Range(0f,5f)] public float FishCohesionWeight   = 1f;
@@ -51,6 +54,7 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
     [Range(0.0001f,0.001f)] public float SharkMaxDeceleration = 0.0007f;
     [Range(0f,0.1f)] public float SharkMinSpeed = 0.015f;
     [Range(0f,20f)] public float SharkMaxSpeed = 4f;
+    [Range(0f,2f)] public float SharkTurnRadius = 1f;
 
     [Header("Weights")]
     [Range(0f,5f)] public float SharkCohesionWeight   = 1f;
@@ -85,13 +89,30 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
         this.CalculateValidSettings();
     }
 
-#if UNITY_EDITOR
     void Update()
     {
+        // Scramble the order of the boids list
+        foreach (Boid.TYPE type in this.AllBoids.Keys)
+        {
+            this.AllBoids[type].Shuffle();
+        }
+
+#if UNITY_EDITOR
         // Update cached items
         this.CalculateValidSettings();
-    }
 #endif
+    }
+
+    public void SpawnFish()
+    {
+        GameObject spawned = GameObject.Find("Spawned Fish");
+        if (spawned == null)
+            { spawned = new GameObject(); spawned.name = "Spawned Fish"; }
+
+        Fish newFish = Instantiate<Fish>(this.FishPrefab);
+        newFish.gameObject.name = "Fish";
+        newFish.transform.SetParent(spawned.transform);
+    }
 
     private void CalculateValidSettings()
     {

@@ -4,6 +4,7 @@ using ExtensionMethods;
 [RequireComponent(typeof(Collider))]
 public class HardBoundary : Boundary {
 
+	public bool Pulsate = false;
 	protected override void Start()
 	{
 		base.Start();

@@ -74,6 +74,9 @@ public class Fish : Boid
     protected override float MinSpeed {
         get { return this.BoidsManager.FishMinSpeed; }
     }
+    protected override float TurnRadius {
+        get { return this.BoidsManager.FishTurnRadius; }
+    }
 
     // Weights
     protected override float CohesionWeight {

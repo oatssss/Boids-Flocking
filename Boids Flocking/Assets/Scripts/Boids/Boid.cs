@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿// #define DEBUG
+
+using UnityEngine;
 using System.Collections.Generic;
 using ExtensionMethods;
 using System.Linq;
@@ -6,6 +8,7 @@ using System.Diagnostics;
 
 public abstract class Boid : MonoBehaviour {
 
+    [SerializeField] private Rigidbody Rigidbody;
     public bool DebugFocus = false;
     [SerializeField] protected BoidsManager BoidsManager { get { return BoidsManager.Instance; } }
     protected abstract bool Flocks { get; }
@@ -37,6 +40,7 @@ public abstract class Boid : MonoBehaviour {
     protected abstract float MaxDeceleration { get; }
     protected abstract float MaxSpeed { get; }
     protected abstract float MinSpeed { get; }
+    protected abstract float TurnRadius { get; }
 
     // Weights
     protected abstract float CohesionWeight { get; }
@@ -57,7 +61,7 @@ public abstract class Boid : MonoBehaviour {
     // Flock Capping
     [ReadOnly] public Flock Flock;
 
-#if UNITY_EDITOR
+#if (!SKIP_DEBUG && UNITY_EDITOR)
     #pragma warning disable 0414    // Private field assigned but not used.
     // Sets
     [ReadOnly] [SerializeField] private List<Boid> Neighbours = new List<Boid>();
@@ -99,7 +103,7 @@ public abstract class Boid : MonoBehaviour {
 #endif
     // Unlike the above sets, the boid does need to keep track of targets for the calculation since the target calculation occurs in stages
     [ReadOnly] [SerializeField] private HashSet<ProximityTarget> TargetsWithinRange = new HashSet<ProximityTarget>();
-    [ReadOnly] [SerializeField] private Transform Goal;
+    [ReadOnly] [SerializeField] protected Transform Goal;
     [ReadOnly] public bool Fleeing;
     [ReadOnly] public bool HasPredators;
 
@@ -110,6 +114,8 @@ public abstract class Boid : MonoBehaviour {
 
     protected virtual void OnDestroy()
     {
+        if (this.Flock != null)
+            { this.Flock.RemoveMember(this); }
         this.BoidsManager.DeregisterBoid(this);
     }
 
@@ -148,15 +154,19 @@ public abstract class Boid : MonoBehaviour {
     protected virtual void FixedUpdate()
     {
         Dictionary<Boid.TYPE,HashSet<Boid>> neighbours = this.BoidsManager.SpatialPartitioner.FindNeighbours(this);
-        Dictionary<Boid.TYPE,HashSet<Boid>> repellants = this.BoidsManager.SpatialPartitioner.FindRepellants(this);
+        // Dictionary<Boid.TYPE,HashSet<Boid>> repellants = this.BoidsManager.SpatialPartitioner.FindRepellants(this);
+        Dictionary<Boid.TYPE,HashSet<Boid>> repellants = neighbours;
         Dictionary<Boid.TYPE,HashSet<Boid>> predators  = this.BoidsManager.SpatialPartitioner.FindPredators(this);
         Dictionary<Boid.TYPE,HashSet<Boid>> prey       = this.BoidsManager.SpatialPartitioner.FindPrey(this);
         this.TargetsWithinRange                        = this.BoidsManager.SpatialPartitioner.FindTargetsNearBoid(this);
         this.Goal                                      = this.GetBestGoal(this.TargetsWithinRange, prey);
 
+        if (this.Flock != null && (this.Flock.transform.position - this.transform.position).magnitude > 3)
+            { this.Flock.RemoveMember(this); }
+
         this.HasPredators = predators.Count > 0 ? true : false;
 
-#if UNITY_EDITOR
+#if (!SKIP_DEBUG && UNITY_EDITOR)
         // Update inspector lists
         List<Boid> tmpNeighbours = new List<Boid>();
         foreach (Boid.TYPE type in neighbours.Keys)
@@ -193,7 +203,8 @@ public abstract class Boid : MonoBehaviour {
 
         // Update rotation
         Quaternion updateQuaternion = Quaternion.LookRotation(updateVelocity);
-        this.transform.rotation = Quaternion.Slerp(this.transform.rotation, updateQuaternion, 2*Time.fixedDeltaTime);
+        // this.transform.rotation = Quaternion.Slerp(this.transform.rotation, updateQuaternion, 2*Time.fixedDeltaTime);
+        this.Rigidbody.MoveRotation(Quaternion.Slerp(this.transform.rotation, updateQuaternion, 2*Time.fixedDeltaTime/this.TurnRadius));
 
         // Restrict new speed to be within acceleration range
         float minSpeed = this.Speed - this.MaxAcceleration;
@@ -204,7 +215,8 @@ public abstract class Boid : MonoBehaviour {
         updateVelocity = (this.transform.forward*mag*Time.fixedDeltaTime).ClampMagnitudeToRange(minSpeed, maxSpeed);
         updateVelocity = updateVelocity.ClampMagnitudeToRange(this.MinSpeed, this.MaxSpeed);
         this.Speed = updateVelocity.magnitude;
-        this.transform.position = this.transform.position + updateVelocity;
+        // this.transform.position = this.transform.position + updateVelocity;
+        this.Rigidbody.MovePosition(this.transform.position + this.transform.forward*this.Speed);
     }
 
     protected virtual Vector3 CalculateCohesion(Dictionary<TYPE, HashSet<Boid>> neighbours)
@@ -239,7 +251,7 @@ public abstract class Boid : MonoBehaviour {
             { toCoM = toCoM.NormalizeMagnitudeToRange(this.CohesiveSwitchDistance, this.NeighbourRadius, this.MaxSpeed, 0f); }
 
         // Return a vector from this boid's position to the center of mass
-        return toCoM * this.CohesionWeight;
+        return toCoM.normalized * this.CohesionWeight;
     }
 
     protected virtual Vector3 CalculateAlignment(Dictionary<TYPE, HashSet<Boid>> neighbours)

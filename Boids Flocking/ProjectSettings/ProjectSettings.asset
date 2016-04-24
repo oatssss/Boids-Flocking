@@ -336,7 +336,7 @@ PlayerSettings:
   psmSplashimage: {fileID: 0}
   spritePackerPolicy: 
   scriptingDefineSymbols:
-    1: CROSS_PLATFORM_INPUT
+    1: CROSS_PLATFORM_INPUT;SKIP_DEBUG
     2: CROSS_PLATFORM_INPUT
     4: CROSS_PLATFORM_INPUT;MOBILE_INPUT
     7: CROSS_PLATFORM_INPUT;MOBILE_INPUT
@@ -425,10 +425,12 @@ PlayerSettings:
   WebGL::memorySize: 256
   WebPlayer::ScriptingBackend: 0
   boolPropertyNames:
+  - Standalone::VR::enable
   - WebGL::analyzeBuildSize
   - WebGL::dataCaching
   - WebGL::useEmbeddedResources
   - XboxOne::enus
+  Standalone::VR::enable: 0
   WebGL::analyzeBuildSize: 0
   WebGL::dataCaching: 0
   WebGL::useEmbeddedResources: 0
@@ -440,7 +442,10 @@ PlayerSettings:
   WebGL::emscriptenArgs: 
   WebGL::template: APPLICATION:Default
   additionalIl2CppArgs::additionalIl2CppArgs: 
-  vectorPropertyNames: []
+  vectorPropertyNames:
+  - Standalone::VR::enabledDevices
+  Standalone::VR::enabledDevices:
+  - Oculus
   cloudProjectId: 
   projectName: 
   organizationId: 
