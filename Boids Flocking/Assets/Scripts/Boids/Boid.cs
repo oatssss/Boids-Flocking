@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 public abstract class Boid : MonoBehaviour {
 
+    public bool DebugFocus = false;
     [SerializeField] protected BoidsManager BoidsManager { get { return BoidsManager.Instance; } }
     protected abstract bool Flocks { get; }
     protected abstract ITargetSelector TargetSelector { get; }
@@ -53,6 +54,9 @@ public abstract class Boid : MonoBehaviour {
     [ReadOnly] [SerializeField] protected bool OutOfHardBounds = true;
     [ReadOnly] [SerializeField] protected bool OutOfSoftBounds;
 
+    // Flock Capping
+    [ReadOnly] public Flock Flock;
+
 #if UNITY_EDITOR
     #pragma warning disable 0414    // Private field assigned but not used.
     // Sets
@@ -73,7 +77,7 @@ public abstract class Boid : MonoBehaviour {
         GameObject colliderContainer = new GameObject();
         colliderContainer.name = "Colliders";
         colliderContainer.transform.SetParent(this.transform);
-        colliderContainer.transform.position = Vector3.zero;
+        colliderContainer.transform.localPosition = Vector3.zero;
         colliderContainer.layer = 0;
 
         this.NeighbourCollider  = colliderContainer.AddComponent<SphereCollider>();
@@ -184,8 +188,7 @@ public abstract class Boid : MonoBehaviour {
         Vector3 boundary        = this.CalculateBoundary();
 
         if (!this.Goal || this.HasPredators) { separation *= 0.3f; }
-        // if (this.HasPredators) { separation *= 0.3f; }
-
+        // UnityEngine.Debug.LogWarningFormat("COHESION: {0}\nSEPARATION: {1}\nALIGNMENT: {2}\nPREDATORS: {3}\nGOAL: {4}\nWANDER: {5}\nBOUNDARY: {6}", cohesion, separation, alignment, avoidPredators, goalSeeking, wander, boundary);
         Vector3 updateVelocity = cohesion + separation + alignment + avoidPredators + goalSeeking + wander + boundary;
 
         // Update rotation
@@ -293,6 +296,7 @@ public abstract class Boid : MonoBehaviour {
     {
         Vector3 away = Vector3.zero;
         bool fleeing = false;
+        int predatorCount = 0;
         foreach (TYPE type in predators.Keys)
         {
             HashSet<Boid> typedPredators = predators[type];
@@ -305,10 +309,15 @@ public abstract class Boid : MonoBehaviour {
                     { fleeing = true;}
 
                 away += awayFromPredator.normalized;
-                away *= 4.75f;
+                predatorCount++;
             }
         }
 
+        if (predatorCount == 0)
+            { return Vector3.zero; }
+
+        away /= predatorCount;
+        away *= 4.75f;
         this.Fleeing = fleeing;
         return away * this.PredatorWeight;
     }

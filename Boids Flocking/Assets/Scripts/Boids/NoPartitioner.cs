@@ -22,8 +22,8 @@ public class NoPartitioner : BoidsPartitioner
             HashSet<Boid> withinRange = new HashSet<Boid>();
             foreach (Boid potential in boids)
             {
-                if (withinRange.Count >= maximum)
-                    { break; }
+                // if (withinRange.Count >= maximum)
+                //     { break; }
 
                 // Is the boid within radius? Then add to list
                 if ((potential.transform.position - originBoid.transform.position).magnitude < radius)

@@ -1505,6 +1505,10 @@ Prefab:
       propertyPath: m_RootOrder
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 11491280, guid: 16de31618e96246d58e5eecfa39c5bd4, type: 2}
+      propertyPath: DebugFocus
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 16de31618e96246d58e5eecfa39c5bd4, type: 2}
   m_IsPrefabParent: 0
@@ -1988,6 +1992,7 @@ GameObject:
   - 114: {fileID: 1231843021}
   - 114: {fileID: 1231843020}
   - 114: {fileID: 1231843023}
+  - 114: {fileID: 1231843024}
   m_Layer: 0
   m_Name: Boids Manager
   m_TagString: Untagged
@@ -2019,7 +2024,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   SpatialPartitioner: {fileID: 1231843020}
   MaxFishFlockSize: 10
-  FishNeighbourRadius: 6
+  FishNeighbourRadius: 10
   FishRepellantRadius: 1.5
   FishPredatorRadius: 10
   FishFleeRadius: 3
@@ -2074,6 +2079,17 @@ MonoBehaviour:
   m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 822426d95c96f4995a6705188756630a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1231843024
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1231843019}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7eedbdf46c5ac447e840744a12a20c75, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &1268098055 stripped
@@ -2430,6 +2446,10 @@ Prefab:
     - target: {fileID: 11400000, guid: 49a0e923d39ec3c4c8bb97699e2f2903, type: 2}
       propertyPath: m_MoveSpeed
       value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 11400002, guid: 49a0e923d39ec3c4c8bb97699e2f2903, type: 2}
+      propertyPath: dontClipTag
+      value: CameraNoCollide
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 49a0e923d39ec3c4c8bb97699e2f2903, type: 2}

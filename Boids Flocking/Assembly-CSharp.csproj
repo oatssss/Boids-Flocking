@@ -54,6 +54,7 @@
      <Compile Include="Assets\Scripts\Boids\BoidsTarget.cs" />
      <Compile Include="Assets\Scripts\Boids\Boundary.cs" />
      <Compile Include="Assets\Scripts\Boids\Fish.cs" />
+     <Compile Include="Assets\Scripts\Boids\Flock.cs" />
      <Compile Include="Assets\Scripts\Boids\HardBoundary.cs" />
      <Compile Include="Assets\Scripts\Boids\KDTree.cs" />
      <Compile Include="Assets\Scripts\Boids\KDTreePartitioner.cs" />
