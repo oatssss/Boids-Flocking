@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 public class SpatialHashPartitioner : NoPartitioner
@@ -59,9 +59,23 @@ public class SpatialHashPartitioner : NoPartitioner
     {
         Dictionary<Boid.TYPE,HashSet<Boid>> found = new Dictionary<Boid.TYPE,HashSet<Boid>>();
 
+#if !SKIP_BENCHMARK
+        Stopwatch queryWatch = Stopwatch.StartNew();
+#endif
         Dictionary<Boid.TYPE,List<int>> surroundingBinHashes = this.GetSurroundingBinHashes(types, originBoid, radius);
+#if !SKIP_BENCHMARK
+        queryWatch.Stop();
+        KeyValuePair<ulong,double> queryAverages = BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_SpatialQueryAverage];
+        ulong n = queryAverages.Key + 1;
+        double newAverage = (queryAverages.Value + queryWatch.Elapsed.TotalMilliseconds)/2;
+        KeyValuePair<ulong,double> newPair = new KeyValuePair<ulong,double>(n,newAverage);
+        BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_SpatialQueryAverage] = newPair;
+#endif
         foreach (Boid.TYPE type in types)
         {
+            if (!this.SpatialHash.ContainsKey(type))
+                { continue; }
+
             Dictionary<int,Bin<Boid>> spatialHash = this.SpatialHash[type];
             List<int> typedHashes = surroundingBinHashes[type];
             if (typedHashes == null)
@@ -92,8 +106,8 @@ public class SpatialHashPartitioner : NoPartitioner
     {
         Dictionary<Boid.TYPE,List<int>> typedBinHashes = new Dictionary<Boid.TYPE,List<int>>();
 
-        int xMin = (int)Mathf.Floor((origin.transform.position.x - radius)/BinSize);
         int xMax = (int)Mathf.Floor((origin.transform.position.x + radius)/BinSize);
+        int xMin = (int)Mathf.Floor((origin.transform.position.x - radius)/BinSize);
         int yMax = (int)Mathf.Floor((origin.transform.position.y + radius)/BinSize);
         int yMin = (int)Mathf.Floor((origin.transform.position.y - radius)/BinSize);
         int zMax = (int)Mathf.Floor((origin.transform.position.z + radius)/BinSize);
@@ -163,7 +177,7 @@ public class SpatialHashPartitioner : NoPartitioner
                     {
                         int zOffset = (int)Mathf.Floor(origin.transform.position.z) + zCurrent;
                         hashesForType.Add(Bin<Boid>.GetHashCode(xOffset, yOffset, zOffset));
-                        if (origin.DebugFocus) Debug.LogWarningFormat("BIN: [{0},{1},{2}]", xOffset, yOffset, zOffset);
+                        if (origin.DebugFocus) UnityEngine.Debug.LogWarningFormat("BIN: [{0},{1},{2}]", xOffset, yOffset, zOffset);
                     }
                 }
             }
@@ -172,17 +186,25 @@ public class SpatialHashPartitioner : NoPartitioner
                 { typedBinHashes.Add(type, hashesForType); }
         }
 
-        if (origin.DebugFocus)
-        {
-            Debug.LogWarningFormat("RADIUS: {0}", x);
-        }
-
         return typedBinHashes;
     }
 
-    void FixedUpdate()
+    void Update()
     {
+#if !SKIP_BENCHMARK
+        Stopwatch watch = Stopwatch.StartNew();
+#endif
+
         this.ConstructSpatialHash();
+
+#if !SKIP_BENCHMARK
+        watch.Stop();
+        KeyValuePair<ulong,double> constructAverages = BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_SpatialStructureConstruction];
+        ulong n = constructAverages.Key + 1;
+        double newAverage = (constructAverages.Value + watch.Elapsed.TotalMilliseconds)/2;
+        KeyValuePair<ulong,double> newPair = new KeyValuePair<ulong,double>(n,newAverage);
+        BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_SpatialStructureConstruction] = newPair;
+#endif
     }
 
     private void ConstructSpatialHash()

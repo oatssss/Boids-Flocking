@@ -4,6 +4,8 @@ Project("{CE41215A-2768-C0E7-FF92-46C9E495F73B}") = "Boids Flocking", "Assembly-
 EndProject
 Project("{CE41215A-2768-C0E7-FF92-46C9E495F73B}") = "Boids Flocking", "Assembly-CSharp.csproj", "{0782B992-C84C-025C-2338-C90043BEFBB8}"
 EndProject
+Project("{CE41215A-2768-C0E7-FF92-46C9E495F73B}") = "Boids Flocking", "Assembly-CSharp-Editor-firstpass.csproj", "{6489D815-AC6D-518A-E016-352E67C70750}"
+EndProject
 Project("{CE41215A-2768-C0E7-FF92-46C9E495F73B}") = "Boids Flocking", "Assembly-CSharp-Editor.csproj", "{A3323BD4-B647-AAE4-6BB7-795B99E719F9}"
 EndProject
 Global
@@ -20,6 +22,10 @@ Global
 		{0782B992-C84C-025C-2338-C90043BEFBB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0782B992-C84C-025C-2338-C90043BEFBB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0782B992-C84C-025C-2338-C90043BEFBB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6489D815-AC6D-518A-E016-352E67C70750}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6489D815-AC6D-518A-E016-352E67C70750}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6489D815-AC6D-518A-E016-352E67C70750}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6489D815-AC6D-518A-E016-352E67C70750}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A3323BD4-B647-AAE4-6BB7-795B99E719F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A3323BD4-B647-AAE4-6BB7-795B99E719F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3323BD4-B647-AAE4-6BB7-795B99E719F9}.Release|Any CPU.ActiveCfg = Release|Any CPU

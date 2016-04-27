@@ -151,9 +151,21 @@ public abstract class Boid : MonoBehaviour {
         }
     }
 
-    protected virtual void FixedUpdate()
+    protected virtual void Update()
     {
+#if !SKIP_BENCHMARK
+        Stopwatch neighbourWatch = Stopwatch.StartNew();
+        Stopwatch updateWatch = Stopwatch.StartNew();
+#endif
         Dictionary<Boid.TYPE,HashSet<Boid>> neighbours = this.BoidsManager.SpatialPartitioner.FindNeighbours(this);
+#if !SKIP_BENCHMARK
+        neighbourWatch.Stop();
+        KeyValuePair<ulong,double> neighbourAverages = BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_NeighbourSearchAverage];
+        ulong n = neighbourAverages.Key + 1;
+        double newAverage = (neighbourAverages.Value + neighbourWatch.Elapsed.TotalMilliseconds)/2;
+        KeyValuePair<ulong,double> newPair = new KeyValuePair<ulong,double>(n,newAverage);
+        BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_NeighbourSearchAverage] = newPair;
+#endif
         // Dictionary<Boid.TYPE,HashSet<Boid>> repellants = this.BoidsManager.SpatialPartitioner.FindRepellants(this);
         Dictionary<Boid.TYPE,HashSet<Boid>> repellants = neighbours;
         Dictionary<Boid.TYPE,HashSet<Boid>> predators  = this.BoidsManager.SpatialPartitioner.FindPredators(this);
@@ -189,6 +201,9 @@ public abstract class Boid : MonoBehaviour {
         this.Predators = tmpPredators;
 #endif
 
+#if !SKIP_BENCHMARK
+        Stopwatch cohesionWatch = Stopwatch.StartNew();
+#endif
         Vector3 cohesion        = this.Flocks ? (this.Fleeing ? -this.CalculateCohesion(neighbours) : this.CalculateCohesion(neighbours)) : Vector3.zero;
         Vector3 separation      = this.CalculateSeparation(repellants);
         Vector3 alignment       = (this.Flocks && !this.Fleeing) ? this.CalculateAlignment(neighbours) : Vector3.zero;
@@ -196,6 +211,14 @@ public abstract class Boid : MonoBehaviour {
         Vector3 goalSeeking     = this.CalculateGoal();
         Vector3 wander          = this.CalculateWander();
         Vector3 boundary        = this.CalculateBoundary();
+#if !SKIP_BENCHMARK
+        cohesionWatch.Stop();
+        KeyValuePair<ulong,double> cohesionAverages = BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_CohesionAverage];
+        n = cohesionAverages.Key + 1;
+        newAverage = (cohesionAverages.Value + cohesionWatch.Elapsed.TotalMilliseconds)/2;
+        newPair = new KeyValuePair<ulong,double>(n,newAverage);
+        BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_CohesionAverage] = newPair;
+#endif
 
         if (!this.Goal || this.HasPredators) { separation *= 0.3f; }
         // UnityEngine.Debug.LogWarningFormat("COHESION: {0}\nSEPARATION: {1}\nALIGNMENT: {2}\nPREDATORS: {3}\nGOAL: {4}\nWANDER: {5}\nBOUNDARY: {6}", cohesion, separation, alignment, avoidPredators, goalSeeking, wander, boundary);
@@ -204,7 +227,7 @@ public abstract class Boid : MonoBehaviour {
         // Update rotation
         Quaternion updateQuaternion = Quaternion.LookRotation(updateVelocity);
         // this.transform.rotation = Quaternion.Slerp(this.transform.rotation, updateQuaternion, 2*Time.fixedDeltaTime);
-        this.Rigidbody.MoveRotation(Quaternion.Slerp(this.transform.rotation, updateQuaternion, 2*Time.fixedDeltaTime/this.TurnRadius));
+        this.Rigidbody.MoveRotation(Quaternion.Slerp(this.transform.rotation, updateQuaternion, 2*Time.deltaTime/this.TurnRadius));
 
         // Restrict new speed to be within acceleration range
         float minSpeed = this.Speed - this.MaxAcceleration;
@@ -212,11 +235,20 @@ public abstract class Boid : MonoBehaviour {
         float mag = updateVelocity.magnitude;
         mag = Mathf.Clamp(mag, this.MinSpeed, this.MaxSpeed);
         // Use new orientation to propel forward
-        updateVelocity = (this.transform.forward*mag*Time.fixedDeltaTime).ClampMagnitudeToRange(minSpeed, maxSpeed);
+        updateVelocity = (this.transform.forward*mag*Time.deltaTime).ClampMagnitudeToRange(minSpeed, maxSpeed);
         updateVelocity = updateVelocity.ClampMagnitudeToRange(this.MinSpeed, this.MaxSpeed);
         this.Speed = updateVelocity.magnitude;
         // this.transform.position = this.transform.position + updateVelocity;
         this.Rigidbody.MovePosition(this.transform.position + this.transform.forward*this.Speed);
+
+#if !SKIP_BENCHMARK
+        updateWatch.Stop();
+        KeyValuePair<ulong,double> updateAverages = BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_VelocityUpdateAverage];
+        n = updateAverages.Key + 1;
+        newAverage = (updateAverages.Value + updateWatch.Elapsed.TotalMilliseconds)/2;
+        newPair = new KeyValuePair<ulong,double>(n,newAverage);
+        BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_VelocityUpdateAverage] = newPair;
+#endif
     }
 
     protected virtual Vector3 CalculateCohesion(Dictionary<TYPE, HashSet<Boid>> neighbours)

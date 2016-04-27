@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Linq;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 public abstract class BoidsPartitioner : MonoBehaviour
 {
@@ -10,7 +11,18 @@ public abstract class BoidsPartitioner : MonoBehaviour
     {
         // Get the friendly types that 'boid' flocks with
         Boid.TYPE[] neighbourTypes = boid.NeighbourTypes;
-        Dictionary<Boid.TYPE,HashSet<Boid>> potentialNeighbours = this.FindTypesWithinRadius(neighbourTypes, boid.NeighbourRadius, boid, this.BoidsManager.MaxFishFlockSize);
+        Dictionary<Boid.TYPE,HashSet<Boid>> potentialNeighbours = this.FindTypesWithinRadius(neighbourTypes, boid.NeighbourRadius, boid/*, this.BoidsManager.MaxFishFlockSize*/);
+
+        /*foreach (Boid.TYPE type in potentialNeighbours.Keys)
+        {
+            foreach (Boid neighbour in potentialNeighbours[type])
+            {
+                if (boid.DebugFocus)
+                    { UnityEngine.Debug.DrawLine(boid.transform.position, neighbour.transform.position, Color.yellow); }
+            }
+        }*/
+
+        return potentialNeighbours;
 
         foreach (Boid.TYPE type in potentialNeighbours.Keys)
         {

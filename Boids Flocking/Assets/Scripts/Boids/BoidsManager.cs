@@ -64,6 +64,17 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
     [Range(0f,5f)] public float SharkGoalWeight       = 1f;
     [Range(0f,5f)] public float SharkBoundaryWeight   = 1f;
 
+    public int BoidCount {
+        get {
+            int count = 0;
+            foreach (var typedPair in this.AllBoids)
+            {
+                count += this.AllBoids[typedPair.Key].Count;
+            }
+            return count;
+        }
+    }
+
     // Cached items
     public float FishCohesiveSwitchDistance {
         get         { return this._fishCohesiveSwitchDistance; }
@@ -91,6 +102,7 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
 
     void Update()
     {
+
         // Scramble the order of the boids list
         foreach (Boid.TYPE type in this.AllBoids.Keys)
         {
@@ -103,6 +115,7 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
 #endif
     }
 
+    private readonly float maxSpawnDist = 7;
     public void SpawnFish()
     {
         GameObject spawned = GameObject.Find("Spawned Fish");
@@ -112,6 +125,10 @@ public class BoidsManager : UnitySingletonPersistent<BoidsManager> {
         Fish newFish = Instantiate<Fish>(this.FishPrefab);
         newFish.gameObject.name = "Fish";
         newFish.transform.SetParent(spawned.transform);
+        float xRand = Random.Range(-maxSpawnDist,maxSpawnDist);
+        float yRand = Random.Range(-maxSpawnDist,maxSpawnDist);
+        float zRand = Random.Range(-maxSpawnDist,maxSpawnDist);
+        newFish.transform.position = new Vector3(xRand, yRand, zRand);
     }
 
     private void CalculateValidSettings()

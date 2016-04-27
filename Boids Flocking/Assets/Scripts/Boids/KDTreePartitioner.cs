@@ -22,6 +22,9 @@ public class KDTreePartitioner : NoPartitioner
     /// <returns>A dictionary keyed by boid-type of the boids within the radius.</returns>
     protected override Dictionary<Boid.TYPE, HashSet<Boid>> FindTypesWithinRadius(Boid.TYPE[] types, float radius, Boid originBoid, int maximum = int.MaxValue)
     {
+#if !SKIP_BENCHMARK
+        Stopwatch queryWatch = Stopwatch.StartNew();
+#endif
         float minX = originBoid.transform.position.x - radius;
         float minY = originBoid.transform.position.y - radius;
         float minZ = originBoid.transform.position.z - radius;
@@ -42,16 +45,48 @@ public class KDTreePartitioner : NoPartitioner
             HashSet<Boid> outputSet = this.Boids[type].RangeSearch(rangeMins, rangeMaxs);
             output[type] = outputSet;
         }
+#if !SKIP_BENCHMARK
+        queryWatch.Stop();
+        KeyValuePair<ulong,double> queryAverages = BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_SpatialQueryAverage];
+        ulong n = queryAverages.Key + 1;
+        double newAverage = (queryAverages.Value + queryWatch.Elapsed.TotalMilliseconds)/2;
+        KeyValuePair<ulong,double> newPair = new KeyValuePair<ulong,double>(n,newAverage);
+        BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_SpatialQueryAverage] = newPair;
+#endif
+
+        foreach (Boid.TYPE type in output.Keys)
+        {
+            HashSet<Boid> nearby = output[type];
+            foreach (Boid boid in nearby.ToArray())
+            {
+                float distance = (originBoid.transform.position - boid.transform.position).magnitude;
+                if (distance > radius)
+                    { nearby.Remove(boid); }
+            }
+        }
 
         return output;
     }
 
-    void FixedUpdate()
+    void Update()
     {
+#if !SKIP_BENCHMARK
+        Stopwatch watch = Stopwatch.StartNew();
+#endif
+
         // Rebuild boid tree
         foreach (var pair in this.BoidsManager.AllBoids)
         {
             this.Boids[pair.Key] = new KDTree<Boid>(this.BoidsManager.AllBoids[pair.Key], DataExtractors, 0);
         }
+
+#if !SKIP_BENCHMARK
+        watch.Stop();
+        KeyValuePair<ulong,double> constructAverages = BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_SpatialStructureConstruction];
+        ulong n = constructAverages.Key + 1;
+        double newAverage = (constructAverages.Value + watch.Elapsed.TotalMilliseconds)/2;
+        KeyValuePair<ulong,double> newPair = new KeyValuePair<ulong,double>(n,newAverage);
+        BenchmarkManager.CalculatedAverages[BenchmarkManager.Key_SpatialStructureConstruction] = newPair;
+#endif
     }
 }

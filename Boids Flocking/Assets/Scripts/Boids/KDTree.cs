@@ -41,9 +41,9 @@ public class KDTree<T> {
         Comparison<T> comparison = (a, b) => { return (int)(this.DataExtractor(a) - this.DataExtractor(b)); };
         collection.Sort(comparison);
         int median = collection.Count/2;
-        int leftUpperBound  = Math.Max(0,median-1);
+        // int leftUpperBound  = Math.Max(0,median-1);
         int rightLowerBound = Math.Min(collection.Count-1,median+1);
-        List<T> leftItems   = collection.GetRange(0, leftUpperBound);
+        List<T> leftItems   = collection.GetRange(0, median);
         List<T> rightItems  = collection.GetRange(rightLowerBound,collection.Count-rightLowerBound);
 
         this.Data = collection[median];
