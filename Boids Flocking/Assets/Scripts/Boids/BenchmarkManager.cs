@@ -29,7 +29,7 @@ public class BenchmarkManager : UnitySingletonPersistent<BenchmarkManager> {
 	};
 
 #if !SKIP_BENCHMARK
-	void Start()
+	/*void Start()
 	{
 		Invoke("ResetAverages", 5f);
 		Time.maximumDeltaTime = 10;
@@ -152,11 +152,11 @@ public class BenchmarkManager : UnitySingletonPersistent<BenchmarkManager> {
 			// BoidsManager.Instance.SpawnFish();
 			this.ResetAverages();
 		}
-	}
+	}*/
 
 	void OnGUI()
 	{
-		GUI.Label (new Rect (10,10,500,50), "Boid Count: " + BoidsManager.Instance.BoidCount + ", Samples Calculated: " + CalculatedAverages[Key_NeighbourSearchAverage].Key + "/" + MinimumNeighbourSamples);
+		GUI.Label (new Rect (10,10,500,50), "Boid Count: " + BoidsManager.Instance.BoidCount);
 	}
 #endif
 }

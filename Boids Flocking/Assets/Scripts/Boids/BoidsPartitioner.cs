@@ -11,7 +11,7 @@ public abstract class BoidsPartitioner : MonoBehaviour
     {
         // Get the friendly types that 'boid' flocks with
         Boid.TYPE[] neighbourTypes = boid.NeighbourTypes;
-        Dictionary<Boid.TYPE,HashSet<Boid>> potentialNeighbours = this.FindTypesWithinRadius(neighbourTypes, boid.NeighbourRadius, boid/*, this.BoidsManager.MaxFishFlockSize*/);
+        Dictionary<Boid.TYPE,HashSet<Boid>> potentialNeighbours = this.FindTypesWithinRadius(neighbourTypes, boid.NeighbourRadius, boid, this.BoidsManager.MaxFishFlockSize);
 
         /*foreach (Boid.TYPE type in potentialNeighbours.Keys)
         {
@@ -22,7 +22,7 @@ public abstract class BoidsPartitioner : MonoBehaviour
             }
         }*/
 
-        return potentialNeighbours;
+        // return potentialNeighbours;
 
         foreach (Boid.TYPE type in potentialNeighbours.Keys)
         {
